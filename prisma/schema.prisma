@@ -1,0 +1,102 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String   @id @default(cuid())
+  email             String   @unique
+  name              String
+  password          String
+  role              String   @default("USER")
+  kycStatus         String   @default("UNVERIFIED")
+  kycFullName       String?
+  kycDocumentType   String?
+  kycDocumentNumber String?
+  kycDocumentImage  String?
+  kycSubmittedAt    DateTime?
+  kycVerifiedAt     DateTime?
+  kycVerifiedBy     String?
+  kycRejectReason   String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  wallet            Wallet?
+  deposits          Deposit[]
+  withdrawals       WithdrawalRequest[]
+}
+
+model Wallet {
+  id           String        @id @default(cuid())
+  userId       String        @unique
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  balances     Balance[]
+  transactions Transaction[]
+  createdAt    DateTime      @default(now())
+}
+
+model Balance {
+  id        String   @id @default(cuid())
+  walletId  String
+  wallet    Wallet   @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  currency  String
+  amount    Decimal  @default(0) @db.Decimal(20, 8)
+  createdAt DateTime @default(now())
+
+  @@unique([walletId, currency])
+}
+
+model Transaction {
+  id          String   @id @default(cuid())
+  walletId    String
+  wallet      Wallet   @relation(fields: [walletId], references: [id])
+  type        String
+  amount      Decimal  @db.Decimal(20, 8)
+  currency    String
+  description String?
+  adminId     String?
+  createdAt   DateTime @default(now())
+}
+
+model ExchangeRate {
+  id             String   @id @default(cuid())
+  baseCurrency   String   @default("USD")
+  targetCurrency String
+  rate           Decimal  @db.Decimal(20, 10)
+  updatedAt      DateTime @default(now())
+
+  @@unique([baseCurrency, targetCurrency])
+}
+
+model Deposit {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id])
+  amount        Decimal   @db.Decimal(20, 8)
+  currency      String    @default("USD")
+  method        String
+  methodDetails Json?
+  reference     String?
+  status        String    @default("PENDING")
+  adminId       String?
+  createdAt     DateTime  @default(now())
+  processedAt   DateTime?
+}
+
+model WithdrawalRequest {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id])
+  amount         Decimal  @db.Decimal(20, 8)
+  currency       String   @default("USD")
+  method         String
+  accountDetails Json
+  status         String   @default("PENDING")
+  adminId        String?
+  adminNote      String?
+  createdAt      DateTime @default(now())
+  processedAt    DateTime?
+}
