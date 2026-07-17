@@ -16,6 +16,16 @@ export const getSession = async () => {
   const t = cookieStore.get(N)?.value;
   return t ? verifyToken(t) : null;
 };
+export const requireAuth = async () => {
+  const s = await getSession();
+  if (!s) throw new Error("Unauthorized");
+  return s;
+};
+export const requireAdmin = async () => {
+  const s = await requireAuth();
+  if (s.role !== "ADMIN") throw new Error("Forbidden");
+  return s;
+};
 export const setCookie = (token: string) => ({
   name: N,
   value: token,
