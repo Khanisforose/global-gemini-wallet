@@ -8,7 +8,7 @@ export default function Dashboard() {
   const [refCode] = useState("GEM" + Math.random().toString(36).slice(2,8).toUpperCase());
   const coinColors: Record<string,string> = { BTC:"#f7931a", ETH:"#627eea", SOL:"#9945ff", USDT:"#26a17b" };
   const txColors: Record<string,string> = { TRANSFER:"#a78bfa", ADMIN_FUNDING:"#22c55e", DEPOSIT:"#22c55e" };
-  const txLabels: Record<string,string> = { TRANSFER:"Sent", ADMIN_FUNDING:"Credited", DEPOSIT:"Received" };
+  const txLabels: Record<string,string> = { TRANSFER:"Sent", ADMIN_FUNDING:"Deposited", DEPOSIT:"Received" };
 
   useEffect(() => {
     fetch("/api/auth/me").then(r=>r.json()).then(d => { if (!d.id) { window.location.href="/"; return; } setU(d); setK(d.kycStatus||"UNVERIFIED"); });
@@ -35,7 +35,6 @@ export default function Dashboard() {
           </div>
         </div>
       </header>
-
       <main className="main">
         {tab==="wallet" && (
           <div className="fade-in">
@@ -47,10 +46,9 @@ export default function Dashboard() {
                 {kyc==="VERIFIED" ? (<><Link href="/wallet/deposit" className="btn btn-primary">📥 Deposit</Link><Link href="/wallet/withdraw" className="btn btn-secondary">📤 Withdraw</Link></>) : (<Link href="/kyc" className="btn btn-primary">📋 Complete KYC</Link>)}
               </div>
             </div>
-
             <div className="grid-2" style={{marginBottom:"24px"}}>
               <div className="card" style={{padding:"24px"}}>
-                <h3 className="font-display" style={{fontSize:"16px",fontWeight:"600",marginBottom:"16px"}}>💵 Fiat Currencies</h3>
+                <h3 className="font-display" style={{fontSize:"16px",fontWeight:"600",marginBottom:"16px"}}>💵 Fiat</h3>
                 {fiat.length===0 ? <p className="text-muted text-sm">No balance yet</p> : fiat.map((b:any)=>(
                   <div key={b.currency} className="row-between" style={{padding:"10px 0",borderBottom:"1px solid rgba(255,255,255,0.04)"}}>
                     <div><span style={{fontWeight:"500"}}>{b.currency}</span><span style={{marginLeft:"8px",fontFamily:"Georgia,serif"}}>{b.amount.toLocaleString("en-US",{minimumFractionDigits:2})}</span></div>
@@ -70,22 +68,20 @@ export default function Dashboard() {
                 ))}
               </div>
             </div>
-
             <div className="card" style={{padding:"24px",marginBottom:"24px"}}>
-              <h3 className="font-display" style={{fontSize:"16px",fontWeight:"600",marginBottom:"16px"}}>📤 Send Funds</h3>
+              <h3 className="font-display" style={{fontSize:"16px",fontWeight:"600",marginBottom:"16px"}}>📤 Send</h3>
               {sendMsg&&<div className="badge badge-green" style={{marginBottom:"12px",padding:"10px",borderRadius:"8px",display:"block"}}>{sendMsg}</div>}
               {sendErr&&<div className="badge badge-red" style={{marginBottom:"12px",padding:"10px",borderRadius:"8px",display:"block"}}>{sendErr}</div>}
               <form onSubmit={sendFunds} className="row-wrap">
-                <input type="text" value={to} onChange={e=>setTo(e.target.value)} placeholder="Email or Username" className="input" style={{flex:1,minWidth:"200px"}} required />
+                <input type="text" value={to} onChange={e=>setTo(e.target.value)} placeholder="Email/Username" className="input" style={{flex:1,minWidth:"200px"}} required />
                 <input type="number" step="0.01" min="0.01" value={sendAmt} onChange={e=>setSA(e.target.value)} placeholder="Amount" className="input" style={{width:"120px"}} required />
                 <select value={sendCurr} onChange={e=>setSC(e.target.value)} className="input" style={{width:"90px"}}><option>USD</option><option>EUR</option><option>GBP</option><option>USDT</option><option>BTC</option><option>ETH</option><option>SOL</option></select>
                 <button type="submit" className="btn btn-primary">Send</button>
               </form>
             </div>
-
             <div className="card" style={{padding:"24px"}}>
               <h3 className="font-display" style={{fontSize:"16px",fontWeight:"600",marginBottom:"16px"}}>📋 Transactions</h3>
-              {txs.length===0 ? <p className="text-muted text-sm" style={{textAlign:"center",padding:"20px"}}>No transactions yet</p> : txs.slice(0,25).map((tx:any)=>(
+              {txs.length===0 ? <p className="text-muted text-sm" style={{textAlign:"center",padding:"20px"}}>No transactions</p> : txs.slice(0,25).map((tx:any)=>(
                 <div key={tx.id} className="row-between" style={{padding:"10px 0",borderBottom:"1px solid rgba(255,255,255,0.04)"}}>
                   <div><span style={{fontSize:"13px",fontWeight:"500",color:txColors[tx.type]||"#d4af37"}}>{txLabels[tx.type]||tx.type}</span>{tx.description&&<p className="text-xs text-muted">{tx.description}</p>}</div>
                   <div style={{textAlign:"right"}}><span style={{fontSize:"13px",color:"#22c55e"}}>+{Number(tx.amount).toLocaleString("en-US",{minimumFractionDigits:2})} {tx.currency}</span><p className="text-xs" style={{color:"#4b5563"}}>{new Date(tx.createdAt).toLocaleDateString()}</p></div>
@@ -94,34 +90,27 @@ export default function Dashboard() {
             </div>
           </div>
         )}
-
         {tab==="profile" && <div className="card fade-in" style={{padding:"32px",maxWidth:"520px"}}>
           <h2 className="font-display text-xl" style={{marginBottom:"24px"}}>👤 Profile</h2>
           {[{l:"Name",v:user.name},{l:"Username",v:"@"+user.username,c:"#d4af37"},{l:"Email",v:user.email},{l:"KYC",v:kyc,c:kyc==="VERIFIED"?"#22c55e":kyc==="PENDING"?"#facc15":"#ef4444"}].map(i=>(
-            <div key={i.l} style={{marginBottom:"16px"}}><label className="text-xs text-muted" style={{display:"block",marginBottom:"4px"}}>{i.l}</label>
-              <div style={{padding:"12px 16px",background:"rgba(255,255,255,0.04)",borderRadius:"10px",fontSize:"14px",color:i.c||"#fff"}}>{i.v}</div></div>
+            <div key={i.l} style={{marginBottom:"16px"}}><label className="text-xs text-muted">{i.l}</label><div style={{padding:"12px 16px",background:"rgba(255,255,255,0.04)",borderRadius:"10px",fontSize:"14px",color:i.c||"#fff"}}>{i.v}</div></div>
           ))}
         </div>}
-
         {tab==="refer" && <div className="card fade-in" style={{padding:"32px",maxWidth:"520px"}}>
-          <h2 className="font-display text-xl" style={{marginBottom:"24px"}}>🔗 Referral Program</h2>
+          <h2 className="font-display text-xl" style={{marginBottom:"24px"}}>🔗 Referral</h2>
           <div className="card" style={{background:"rgba(212,175,55,0.06)",borderColor:"rgba(212,175,55,0.15)",padding:"24px",textAlign:"center",marginBottom:"20px"}}>
-            <p className="text-xs text-muted" style={{marginBottom:"8px"}}>Your Referral Code</p>
+            <p className="text-xs text-muted" style={{marginBottom:"8px"}}>Your Code</p>
             <p className="font-display" style={{fontSize:"32px",fontWeight:"700"}}><span className="text-gradient">{refCode}</span></p>
           </div>
-          <div className="grid-2" style={{gap:"12px"}}>
-            <div className="stat"><div className="stat-value" style={{color:"#60a5fa"}}>0</div><div className="stat-label">Referrals</div></div>
-            <div className="stat"><div className="stat-value" style={{color:"#22c55e"}}>$0</div><div className="stat-label">Earned</div></div>
-          </div>
+          <div className="grid-2" style={{gap:"12px"}}><div className="stat"><div className="stat-value" style={{color:"#60a5fa"}}>0</div><div className="stat-label">Referrals</div></div><div className="stat"><div className="stat-value" style={{color:"#22c55e"}}>$0</div><div className="stat-label">Earned</div></div></div>
         </div>}
-
         {tab==="settings" && <div className="card fade-in" style={{padding:"32px",maxWidth:"520px"}}>
           <h2 className="font-display text-xl" style={{marginBottom:"24px"}}>⚙️ Settings</h2>
           {pwMsg&&<div className={`badge ${pwMsg.includes("✅")?"badge-green":"badge-red"}`} style={{marginBottom:"16px",padding:"10px",borderRadius:"8px",display:"block"}}>{pwMsg}</div>}
           <form onSubmit={changePw} style={{display:"flex",flexDirection:"column",gap:"12px"}}>
             <input type="password" value={curPw} onChange={e=>setCP(e.target.value)} placeholder="Current password" className="input" required />
             <input type="password" value={newPw} onChange={e=>setNP(e.target.value)} placeholder="New password" className="input" required />
-            <button type="submit" className="btn btn-primary">Change Password</button>
+            <button type="submit" className="btn btn-primary">Change</button>
           </form>
         </div>}
       </main>
