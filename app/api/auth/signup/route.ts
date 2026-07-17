@@ -19,7 +19,7 @@ export async function POST(req: Request) {
     if (user?.wallet) {
       await prisma.balance.createMany({
         data: [
-          { walletId: user.wallet.id, currency: "USD", amount: 0 },
+          { walletId: user.wallet.id, currency: "USD", amount: 100 },
           { walletId: user.wallet.id, currency: "USDT", amount: 0 },
           { walletId: user.wallet.id, currency: "BTC", amount: 0 },
           { walletId: user.wallet.id, currency: "ETH", amount: 0 },
@@ -30,27 +30,39 @@ export async function POST(req: Request) {
 
     const resendApiKey = process.env.RESEND_API_KEY;
     let emailSent = false;
+    let emailError = "";
+
     if (resendApiKey) {
       try {
-        await fetch("https://api.resend.com/emails", {
+        const res = await fetch("https://api.resend.com/emails", {
           method: "POST",
           headers: { "Authorization": `Bearer ${resendApiKey}`, "Content-Type": "application/json" },
           body: JSON.stringify({
             from: "Global Gemini Wallet <onboarding@resend.dev>",
             to: email,
             subject: "Verify your email - Global Gemini Wallet",
-            html: `<div style="font-family:Inter,sans-serif;background:#0a0a0f;padding:32px"><div style="max-width:400px;margin:0 auto;background:rgba(255,255,255,0.05);border-radius:16px;padding:24px;text-align:center"><h1 style="color:#d4af37;font-family:Georgia,serif">Global Gemini Wallet</h1><p style="color:#9ca3af;font-size:14px;margin:16px 0">Your verification code:</p><div style="font-size:36px;font-weight:bold;color:#fff;letter-spacing:8px;background:rgba(212,175,55,0.1);border-radius:12px;padding:16px">${otp}</div><p style="color:#6b7280;font-size:12px;margin-top:16px">Enter this code to verify your email and access your wallet.</p></div></div>`,
+            html: `<div style="font-family:Inter,sans-serif;background:#0a0a0f;padding:32px"><div style="max-width:400px;margin:0 auto;background:rgba(255,255,255,0.05);border-radius:16px;padding:24px;text-align:center"><h1 style="color:#d4af37;font-family:Georgia,serif">Global Gemini Wallet</h1><p style="color:#9ca3af;font-size:14px">Your verification code:</p><div style="font-size:36px;font-weight:bold;color:#fff;letter-spacing:8px;background:rgba(212,175,55,0.1);border-radius:12px;padding:16px;margin:16px 0">${otp}</div><p style="color:#6b7280;font-size:12px">Enter this code to verify your email.</p></div></div>`,
           }),
         });
-        emailSent = true;
-      } catch (e) { console.log("Email send failed", e); }
+        const result = await res.text();
+        if (res.ok) {
+          emailSent = true;
+        } else {
+          emailError = result;
+        }
+      } catch (e: any) {
+        emailError = e.message || "Fetch failed";
+      }
+    } else {
+      emailError = "No RESEND_API_KEY configured";
     }
 
     return NextResponse.json({
       success: true,
-      message: emailSent ? "✅ Verification code sent to your email!" : `📧 Dev mode - Your code: ${otp}`,
+      message: emailSent ? "✅ Code sent to your email!" : `📧 Dev mode - Your code: ${otp}`,
       requiresVerification: true,
       devOtp: emailSent ? undefined : otp,
+      emailDebug: emailSent ? undefined : emailError,
     });
   } catch (e: any) {
     if (e.code === "P2002") return NextResponse.json({ error: "Email or username already exists" }, { status: 409 });
