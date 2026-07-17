@@ -6,9 +6,6 @@ export default function Dashboard() {
   const [to, setTo] = useState(""); const [sendAmt, setSA] = useState(""); const [sendCurr, setSC] = useState("USD"); const [sendMsg, setSM] = useState(""); const [sendErr, setSE] = useState("");
   const [curPw, setCP] = useState(""); const [newPw, setNP] = useState(""); const [pwMsg, setPM] = useState("");
   const [refCode] = useState("GEM" + Math.random().toString(36).slice(2,8).toUpperCase());
-  const coinColor: any = { BTC:"#f7931a", ETH:"#627eea", SOL:"#9945ff", USDT:"#26a17b" };
-  const txColor: any = { TRANSFER:"#a78bfa", ADMIN_FUNDING:"#22c55e", DEPOSIT:"#22c55e" };
-  const txLabel: any = { TRANSFER:"Sent", ADMIN_FUNDING:"Credited", DEPOSIT:"Received" };
 
   useEffect(() => {
     fetch("/api/auth/me").then(r=>r.json()).then(d => { if (!d.id) { window.location.href="/"; return; } setU(d); setK(d.kycStatus||"UNVERIFIED"); });
@@ -19,97 +16,112 @@ export default function Dashboard() {
   const sendFunds = async(e:any) => { e.preventDefault(); setSM(""); setSE(""); try { const r=await fetch("/api/transfer",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({to,currency:sendCurr,amount:parseFloat(sendAmt)})}); const d=await r.json(); if(!r.ok) throw new Error(d.error); setSM(`✅ Sent ${sendAmt} ${sendCurr}`); setSA(""); setTo(""); } catch(e:any) { setSE(e.message); } };
   const changePw = async(e:any) => { e.preventDefault(); setPM(""); try { const r=await fetch("/api/auth/password",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({currentPassword:curPw,newPassword:newPw})}); const d=await r.json(); if(!r.ok) throw new Error(d.error); setPM("✅ Password changed!"); setCP(""); setNP(""); } catch(e:any) { setPM("Error: "+e.message); } };
 
-  if (!user) return <div className="min-h-screen flex items-center justify-center bg-[#0a0a0f]"><div className="w-6 h-6 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin"/></div>;
+  if (!user) return <div className="app"><div className="loading"/></div>;
   const fmt = (n:number) => "$"+n.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
-  const BG="rgba(255,255,255,0.03)"; const BR="1px solid rgba(255,255,255,0.06)"; const IP={width:"100%",padding:"12px 14px",background:"#1a1a2e",border:BR,borderRadius:"10px",color:"#fff",fontSize:"14px",outline:"none",boxSizing:"border-box"as const};
 
   return (
-    <div style={{minHeight:"100vh",background:"#0a0a0f",color:"#fff",fontFamily:"Inter,sans-serif"}}>
-      <div style={{borderBottom:BR,padding:"14px 32px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-        <span style={{fontFamily:"Georgia,serif",fontSize:"18px",fontWeight:"600"}}>🌍 Global Gemini <span style={{background:"linear-gradient(135deg,#d4af37,#f0d060)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>Wallet</span></span>
-        <div style={{display:"flex",alignItems:"center",gap:"16px"}}>
-          {["wallet","profile","refer","settings"].map(t=>(<button key={t} onClick={()=>setT(t)} style={{fontSize:"13px",padding:"6px 0",background:"none",border:"none",borderBottom:tab===t?"2px solid #d4af37":"2px solid transparent",color:tab===t?"#d4af37":"#6b7280",cursor:"pointer"}}>{t==="wallet"?"💰 Wallet":t==="profile"?"👤 Profile":t==="refer"?"🔗 Refer":"⚙️ Settings"}</button>))}
-          <button onClick={async()=>{await fetch("/api/auth/signout",{method:"POST"});window.location.href="/";}} style={{fontSize:"13px",color:"#6b7280",background:"none",border:"none",cursor:"pointer",marginLeft:"8px"}}>Sign Out</button>
+    <div className="app">
+      <header className="header">
+        <div className="header-inner">
+          <span className="font-display" style={{fontSize:"18px",fontWeight:"700"}}>🌍 Global Gemini <span className="text-gradient">Wallet</span></span>
+          <div className="row">
+            {[{k:"wallet",l:"💰 Wallet"},{k:"profile",l:"👤 Profile"},{k:"refer",l:"🔗 Refer"},{k:"settings",l:"⚙️ Settings"}].map(t=>(
+              <button key={t.k} onClick={()=>setT(t.k)} className={`tab ${tab===t.k?"active":""}`}>{t.l}</button>
+            ))}
+            <button onClick={async()=>{await fetch("/api/auth/signout",{method:"POST"});window.location.href="/";}} className="btn btn-secondary btn-sm hide-mobile" style={{marginLeft:"8px"}}>Sign Out</button>
+          </div>
         </div>
-      </div>
-      <div style={{maxWidth:"1400px",margin:"0 auto",padding:"24px 32px"}}>
+      </header>
+
+      <main className="main">
         {tab==="wallet" && (
-          <>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"24px",flexWrap:"wrap",gap:"12px"}}>
-              <div><h1 style={{fontSize:"26px",fontWeight:"bold",fontFamily:"Georgia,serif",margin:0}}>Welcome, {user.name}</h1><p style={{fontSize:"34px",fontWeight:"bold",background:"linear-gradient(135deg,#d4af37,#f0d060)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",marginTop:"4px"}}>{fmt(total)} <span style={{fontSize:"14px",color:"#6b7280",fontWeight:"400",WebkitTextFillColor:"#6b7280"}}>total value</span></p></div>
-              <div style={{display:"flex",gap:"8px"}}>
-                {kyc==="VERIFIED" ? (<><Link href="/wallet/deposit" style={{padding:"10px 20px",background:"linear-gradient(135deg,#d4af37,#b8942e)",color:"#000",fontWeight:"600",fontSize:"13px",borderRadius:"10px",textDecoration:"none"}}>📥 Deposit</Link><Link href="/wallet/withdraw" style={{padding:"10px 20px",background:"rgba(255,255,255,0.04)",color:"#e5e7eb",fontWeight:"500",fontSize:"13px",borderRadius:"10px",textDecoration:"none",border:BR}}>📤 Withdraw</Link></>) : (<Link href="/kyc" style={{padding:"10px 20px",background:"linear-gradient(135deg,#d4af37,#b8942e)",color:"#000",fontWeight:"600",fontSize:"13px",borderRadius:"10px",textDecoration:"none"}}>📋 Complete KYC</Link>)}
+          <div className="fade-in">
+            <div className="row-between" style={{marginBottom:"24px",flexWrap:"wrap",gap:"12px"}}>
+              <div><h1 className="font-display" style={{fontSize:"28px",fontWeight:"700"}}>Welcome, {user.name}</h1>
+                <p style={{fontSize:"36px",fontWeight:"700",marginTop:"4px"}}><span className="text-gradient">{fmt(total)}</span> <span className="text-muted" style={{fontSize:"14px",fontWeight:"400"}}>total value</span></p>
+              </div>
+              <div className="row-wrap">
+                {kyc==="VERIFIED" ? (<><Link href="/wallet/deposit" className="btn btn-primary">📥 Deposit</Link><Link href="/wallet/withdraw" className="btn btn-secondary">📤 Withdraw</Link></>) : (<Link href="/kyc" className="btn btn-primary">📋 Complete KYC</Link>)}
               </div>
             </div>
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"20px",marginBottom:"20px"}}>
-              <div style={{background:BG,backdropFilter:"blur(24px)",border:BR,borderRadius:"16px",padding:"20px"}}>
-                <h2 style={{fontSize:"16px",fontWeight:"600",fontFamily:"Georgia,serif",marginBottom:"12px"}}>💵 Fiat</h2>
-                {fiat.length===0 ? <p style={{color:"#6b7280",fontSize:"13px",padding:"12px 0"}}>No balance yet</p> : fiat.map((b:any)=><div key={b.currency} style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:BR}}><div><span style={{fontWeight:"500"}}>{b.currency}</span><span style={{marginLeft:"8px",fontFamily:"Georgia,serif"}}>{b.amount.toLocaleString("en-US",{minimumFractionDigits:2})}</span></div><span style={{color:"#d4af37"}}>{fmt(b.usdValue)}</span></div>)}
+
+            <div className="grid-2" style={{marginBottom:"24px"}}>
+              <div className="card" style={{padding:"24px"}}>
+                <h3 className="font-display" style={{fontSize:"16px",fontWeight:"600",marginBottom:"16px"}}>💵 Fiat Currencies</h3>
+                {fiat.length===0 ? <p className="text-muted text-sm">No balance yet</p> : fiat.map((b:any)=>(
+                  <div key={b.currency} className="row-between" style={{padding:"10px 0",borderBottom:"1px solid rgba(255,255,255,0.04)"}}>
+                    <div><span style={{fontWeight:"500"}}>{b.currency}</span><span style={{marginLeft:"8px",fontFamily:"Georgia,serif"}}>{b.amount.toLocaleString("en-US",{minimumFractionDigits:2})}</span></div>
+                    <span className="text-gradient" style={{fontWeight:"500"}}>{fmt(b.usdValue)}</span>
+                  </div>
+                ))}
               </div>
-              <div style={{background:BG,backdropFilter:"blur(24px)",border:BR,borderRadius:"16px",padding:"20px"}}>
-                <h2 style={{fontSize:"16px",fontWeight:"600",fontFamily:"Georgia,serif",marginBottom:"12px"}}>🪙 Crypto <span style={{fontSize:"11px",color:"#6b7280",fontWeight:"400"}}>Live</span></h2>
-                {crypto.length===0 ? <p style={{color:"#6b7280",fontSize:"13px",padding:"12px 0"}}>No crypto yet</p> : crypto.map((b:any)=>(
-                  <div key={b.symbol} style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:BR}}>
-                    <div><span style={{fontWeight:"500",color:coinColor[b.symbol]||"#fff"}}>{b.symbol}</span>
-                      <span style={{marginLeft:"8px",fontFamily:"Georgia,serif",fontSize:"13px"}}>{b.amount.toLocaleString("en-US",{minimumFractionDigits:4})}</span>
-                      <span style={{fontSize:"11px",color:"#6b7280",marginLeft:"6px"}}>@ ${b.price?.toLocaleString()}</span></div>
-                    <span style={{color:"#d4af37"}}>{fmt(b.usdValue)}</span>
+              <div className="card" style={{padding:"24px"}}>
+                <h3 className="font-display" style={{fontSize:"16px",fontWeight:"600",marginBottom:"16px"}}>🪙 Crypto <span className="text-muted" style={{fontSize:"12px",fontWeight:"400"}}>Live market</span></h3>
+                {crypto.length===0 ? <p className="text-muted text-sm">No crypto yet</p> : crypto.map((b:any)=>(
+                  <div key={b.symbol} className="row-between" style={{padding:"10px 0",borderBottom:"1px solid rgba(255,255,255,0.04)"}}>
+                    <div><span style={{fontWeight:"500",color:{"BTC":"#f7931a","ETH":"#627eea","SOL":"#9945ff","USDT":"#26a17b"}[b.symbol]||"#fff"}}>{b.symbol}</span>
+                      <span style={{marginLeft:"8px",fontFamily:"Georgia,serif"}}>{b.amount.toLocaleString("en-US",{minimumFractionDigits:4})}</span>
+                      <span className="text-muted text-xs" style={{marginLeft:"6px"}}>@ ${b.price?.toLocaleString()}</span></div>
+                    <span className="text-gradient">{fmt(b.usdValue)}</span>
                   </div>
                 ))}
               </div>
             </div>
-            <div style={{background:BG,backdropFilter:"blur(24px)",border:BR,borderRadius:"16px",padding:"20px",marginBottom:"20px"}}>
-              <h2 style={{fontSize:"16px",fontWeight:"600",fontFamily:"Georgia,serif",marginBottom:"12px"}}>📤 Send</h2>
-              {sendMsg&&<div style={{background:"rgba(34,197,94,0.1)",border:"1px solid rgba(34,197,94,0.15)",color:"#22c55e",fontSize:"12px",padding:"10px",borderRadius:"8px",marginBottom:"12px"}}>{sendMsg}</div>}
-              {sendErr&&<div style={{background:"rgba(239,68,68,0.1)",border:"1px solid rgba(239,68,68,0.15)",color:"#ef4444",fontSize:"12px",padding:"10px",borderRadius:"8px",marginBottom:"12px"}}>{sendErr}</div>}
-              <form onSubmit={sendFunds} style={{display:"flex",gap:"8px",flexWrap:"wrap"}}>
-                <input type="text" value={to} onChange={e=>setTo(e.target.value)} placeholder="Email/Username" style={{...IP,flex:1,minWidth:"200px"}} required />
-                <input type="number" step="0.01" min="0.01" value={sendAmt} onChange={e=>setSA(e.target.value)} placeholder="Amount" style={{...IP,width:"110px"}} required />
-                <select value={sendCurr} onChange={e=>setSC(e.target.value)} style={{...IP,width:"90px"}}><option>USD</option><option>EUR</option><option>GBP</option><option>USDT</option><option>BTC</option><option>ETH</option><option>SOL</option></select>
-                <button type="submit" style={{padding:"12px 24px",background:"linear-gradient(135deg,#d4af37,#b8942e)",color:"#000",fontWeight:"600",fontSize:"14px",border:"none",borderRadius:"10px",cursor:"pointer"}}>Send</button>
+
+            <div className="card" style={{padding:"24px",marginBottom:"24px"}}>
+              <h3 className="font-display" style={{fontSize:"16px",fontWeight:"600",marginBottom:"16px"}}>📤 Send Funds</h3>
+              {sendMsg&&<div className="badge badge-green" style={{marginBottom:"12px",padding:"10px",borderRadius:"8px",display:"block"}}>{sendMsg}</div>}
+              {sendErr&&<div className="badge badge-red" style={{marginBottom:"12px",padding:"10px",borderRadius:"8px",display:"block"}}>{sendErr}</div>}
+              <form onSubmit={sendFunds} className="row-wrap">
+                <input type="text" value={to} onChange={e=>setTo(e.target.value)} placeholder="Email or Username" className="input" style={{flex:1,minWidth:"200px"}} required />
+                <input type="number" step="0.01" min="0.01" value={sendAmt} onChange={e=>setSA(e.target.value)} placeholder="Amount" className="input" style={{width:"120px"}} required />
+                <select value={sendCurr} onChange={e=>setSC(e.target.value)} className="input" style={{width:"90px"}}><option>USD</option><option>EUR</option><option>GBP</option><option>USDT</option><option>BTC</option><option>ETH</option><option>SOL</option></select>
+                <button type="submit" className="btn btn-primary">Send</button>
               </form>
             </div>
-            <div style={{background:BG,backdropFilter:"blur(24px)",border:BR,borderRadius:"16px",padding:"20px"}}>
-              <h2 style={{fontSize:"16px",fontWeight:"600",fontFamily:"Georgia,serif",marginBottom:"12px"}}>📋 History</h2>
-              {txs.length===0?<p style={{color:"#6b7280",textAlign:"center",padding:"16px"}}>No transactions</p>:txs.slice(0,25).map((tx:any)=>(
-                <div key={tx.id} style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:BR}}>
-                  <div><span style={{fontSize:"12px",fontWeight:"500",color:txColor[tx.type]||"#d4af37"}}>{txLabel[tx.type]||tx.type}</span>{tx.description&&<p style={{fontSize:"11px",color:"#6b7280"}}>{tx.description}</p>}</div>
-                  <div style={{textAlign:"right"}}><span style={{fontSize:"13px",color:"#22c55e"}}>+{Number(tx.amount).toLocaleString("en-US",{minimumFractionDigits:2})} {tx.currency}</span><p style={{fontSize:"11px",color:"#4b5563"}}>{new Date(tx.createdAt).toLocaleDateString()}</p></div>
+
+            <div className="card" style={{padding:"24px"}}>
+              <h3 className="font-display" style={{fontSize:"16px",fontWeight:"600",marginBottom:"16px"}}>📋 Transactions</h3>
+              {txs.length===0 ? <p className="text-muted text-sm" style={{textAlign:"center",padding:"20px"}}>No transactions yet</p> : txs.slice(0,25).map((tx:any)=>(
+                <div key={tx.id} className="row-between" style={{padding:"10px 0",borderBottom:"1px solid rgba(255,255,255,0.04)"}}>
+                  <div><span style={{fontSize:"13px",fontWeight:"500",color:{"TRANSFER":"#a78bfa","ADMIN_FUNDING":"#22c55e","DEPOSIT":"#22c55e"}[tx.type]||"#d4af37"}}>{{"TRANSFER":"Sent","ADMIN_FUNDING":"Credited","DEPOSIT":"Received"}[tx.type]||tx.type}</span>{tx.description&&<p className="text-xs text-muted">{tx.description}</p>}</div>
+                  <div style={{textAlign:"right"}}><span style={{fontSize:"13px",color:"#22c55e"}}>+{Number(tx.amount).toLocaleString("en-US",{minimumFractionDigits:2})} {tx.currency}</span><p className="text-xs" style={{color:"#4b5563"}}>{new Date(tx.createdAt).toLocaleDateString()}</p></div>
                 </div>
               ))}
             </div>
-          </>
-        )}
-        {tab==="profile" && (
-          <div style={{background:BG,backdropFilter:"blur(24px)",border:BR,borderRadius:"16px",padding:"24px",maxWidth:"500px"}}>
-            <h2 style={{fontSize:"20px",fontWeight:"bold",fontFamily:"Georgia,serif",marginBottom:"20px"}}>👤 Profile</h2>
-            <div style={{marginBottom:"12px"}}><label style={{fontSize:"12px",color:"#6b7280",marginBottom:"4px"}}>Name</label><div style={{padding:"12px",background:"rgba(255,255,255,0.05)",borderRadius:"10px",fontSize:"14px"}}>{user.name}</div></div>
-            <div style={{marginBottom:"12px"}}><label style={{fontSize:"12px",color:"#6b7280",marginBottom:"4px"}}>Username</label><div style={{padding:"12px",background:"rgba(255,255,255,0.05)",borderRadius:"10px",fontSize:"14px",color:"#d4af37"}}>@{user.username}</div></div>
-            <div style={{marginBottom:"12px"}}><label style={{fontSize:"12px",color:"#6b7280",marginBottom:"4px"}}>Email</label><div style={{padding:"12px",background:"rgba(255,255,255,0.05)",borderRadius:"10px",fontSize:"14px"}}>{user.email}</div></div>
-            <div style={{marginBottom:"12px"}}><label style={{fontSize:"12px",color:"#6b7280",marginBottom:"4px"}}>KYC</label><div style={{padding:"12px",background:"rgba(255,255,255,0.05)",borderRadius:"10px",fontSize:"14px"}}><span style={{color:kyc==="VERIFIED"?"#22c55e":kyc==="PENDING"?"#facc15":"#ef4444"}}>{kyc}</span></div></div>
           </div>
         )}
-        {tab==="refer" && (
-          <div style={{background:BG,backdropFilter:"blur(24px)",border:BR,borderRadius:"16px",padding:"24px",maxWidth:"500px"}}>
-            <h2 style={{fontSize:"20px",fontWeight:"bold",fontFamily:"Georgia,serif",marginBottom:"20px"}}>🔗 Referral</h2>
-            <div style={{background:"rgba(212,175,55,0.08)",border:"1px solid rgba(212,175,55,0.15)",borderRadius:"12px",padding:"16px",marginBottom:"16px",textAlign:"center"}}><p style={{fontSize:"12px",color:"#6b7280",marginBottom:"4px"}}>Your Code</p><p style={{fontSize:"28px",fontWeight:"bold",fontFamily:"Georgia,serif",background:"linear-gradient(135deg,#d4af37,#f0d060)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>{refCode}</p></div>
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"12px"}}><div style={{background:"rgba(255,255,255,0.03)",borderRadius:"10px",padding:"16px",textAlign:"center"}}><div style={{fontSize:"20px",fontWeight:"bold",color:"#60a5fa"}}>0</div><div style={{fontSize:"11px",color:"#6b7280"}}>Referrals</div></div><div style={{background:"rgba(255,255,255,0.03)",borderRadius:"10px",padding:"16px",textAlign:"center"}}><div style={{fontSize:"20px",fontWeight:"bold",color:"#22c55e"}}>$0</div><div style={{fontSize:"11px",color:"#6b7280"}}>Earned</div></div></div>
+
+        {tab==="profile" && <div className="card fade-in" style={{padding:"32px",maxWidth:"520px"}}>
+          <h2 className="font-display text-xl" style={{marginBottom:"24px"}}>👤 Profile</h2>
+          {[{l:"Name",v:user.name},{l:"Username",v:"@"+user.username,c:"#d4af37"},{l:"Email",v:user.email},{l:"KYC",v:kyc,c:{"VERIFIED":"#22c55e","PENDING":"#facc15"}[kyc]||"#ef4444"}].map(i=>(
+            <div key={i.l} style={{marginBottom:"16px"}}><label className="text-xs text-muted" style={{display:"block",marginBottom:"4px"}}>{i.l}</label>
+              <div style={{padding:"12px 16px",background:"rgba(255,255,255,0.04)",borderRadius:"10px",fontSize:"14px",color:i.c||"#fff"}}>{i.v}</div></div>
+          ))}
+        </div>}
+
+        {tab==="refer" && <div className="card fade-in" style={{padding:"32px",maxWidth:"520px"}}>
+          <h2 className="font-display text-xl" style={{marginBottom:"24px"}}>🔗 Referral Program</h2>
+          <div className="card" style={{background:"rgba(212,175,55,0.06)",borderColor:"rgba(212,175,55,0.15)",padding:"24px",textAlign:"center",marginBottom:"20px"}}>
+            <p className="text-xs text-muted" style={{marginBottom:"8px"}}>Your Referral Code</p>
+            <p className="font-display" style={{fontSize:"32px",fontWeight:"700"}}><span className="text-gradient">{refCode}</span></p>
           </div>
-        )}
-        {tab==="settings" && (
-          <div style={{maxWidth:"500px"}}>
-            <div style={{background:BG,backdropFilter:"blur(24px)",border:BR,borderRadius:"16px",padding:"24px"}}>
-              <h2 style={{fontSize:"20px",fontWeight:"bold",fontFamily:"Georgia,serif",marginBottom:"20px"}}>⚙️ Settings</h2>
-              {pwMsg&&<div style={{background:pwMsg.includes("✅")?"rgba(34,197,94,0.1)":"rgba(239,68,68,0.1)",border:"1px solid rgba(239,68,68,0.15)",color:pwMsg.includes("✅")?"#22c55e":"#ef4444",fontSize:"12px",padding:"10px",borderRadius:"8px",marginBottom:"12px"}}>{pwMsg}</div>}
-              <form onSubmit={changePw} style={{display:"flex",flexDirection:"column",gap:"12px"}}>
-                <input type="password" value={curPw} onChange={e=>setCP(e.target.value)} placeholder="Current password" style={IP} required />
-                <input type="password" value={newPw} onChange={e=>setNP(e.target.value)} placeholder="New password" style={IP} required />
-                <button type="submit" style={{padding:"12px",background:"linear-gradient(135deg,#d4af37,#b8942e)",color:"#000",fontWeight:"600",fontSize:"14px",border:"none",borderRadius:"10px",cursor:"pointer"}}>Change</button>
-              </form>
-            </div>
+          <div className="grid-2" style={{gap:"12px"}}>
+            <div className="stat"><div className="stat-value" style={{color:"#60a5fa"}}>0</div><div className="stat-label">Referrals</div></div>
+            <div className="stat"><div className="stat-value" style={{color:"#22c55e"}}>$0</div><div className="stat-label">Earned</div></div>
           </div>
-        )}
-      </div>
+        </div>}
+
+        {tab==="settings" && <div className="card fade-in" style={{padding:"32px",maxWidth:"520px"}}>
+          <h2 className="font-display text-xl" style={{marginBottom:"24px"}}>⚙️ Settings</h2>
+          {pwMsg&&<div className={`badge ${pwMsg.includes("✅")?"badge-green":"badge-red"}`} style={{marginBottom:"16px",padding:"10px",borderRadius:"8px",display:"block"}}>{pwMsg}</div>}
+          <form onSubmit={changePw} style={{display:"flex",flexDirection:"column",gap:"12px"}}>
+            <input type="password" value={curPw} onChange={e=>setCP(e.target.value)} placeholder="Current password" className="input" required />
+            <input type="password" value={newPw} onChange={e=>setNP(e.target.value)} placeholder="New password" className="input" required />
+            <button type="submit" className="btn btn-primary">Change Password</button>
+          </form>
+        </div>}
+      </main>
     </div>
   );
 }
