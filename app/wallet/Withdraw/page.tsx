@@ -1,76 +1,34 @@
-"use client";
-import { useState } from "react";
-import Link from "next/link";
-
+"use client"; import { useState } from "react"; import Link from "next/link";
+const METHODS = [
+  { id:"UPI", label:"UPI", icon:"📱", fields:[{k:"upiId",pl:"example@paytm"}] },
+  { id:"BANK_ACCOUNT", label:"Bank Account", icon:"🏦", fields:[{k:"accountName",pl:"Full Name"},{k:"accountNumber",pl:"Account Number"},{k:"ifsc",pl:"IFSC Code"}] },
+  { id:"PAYPAL", label:"PayPal", icon:"🅿️", fields:[{k:"email",pl:"PayPal Email"}] },
+  { id:"CRYPTO", label:"Crypto", icon:"₿", fields:[{k:"address",pl:"Wallet Address"},{k:"network",pl:"Network (ERC20/BEP20/TRC20/SOL)"}] },
+];
 export default function WithdrawPage() {
-  const [method, setM] = useState("UPI");
-  const [amount, setA] = useState("");
-  const [details, setD] = useState<Record<string, string>>({});
-  const [step, setStep] = useState<"form" | "done">("form");
-  const [err, setErr] = useState("");
-
-  const fields = method === "UPI" ? [{ k: "upiId", lbl: "UPI ID", ph: "example@paytm" }]
-    : method === "BANK_ACCOUNT" ? [{ k: "accountName", lbl: "Account Name", ph: "John Doe" }, { k: "accountNumber", lbl: "Account Number", ph: "1234567890" }, { k: "ifsc", lbl: "IFSC Code", ph: "HDFC0001234" }]
-    : method === "PAYPAL" ? [{ k: "email", lbl: "PayPal Email", ph: "user@example.com" }]
-    : [{ k: "address", lbl: "Wallet Address", ph: "0x... or bc1..." }, { k: "network", lbl: "Network", ph: "ERC20 / SOL" }];
-
-  async function submit(e: any) {
-    e.preventDefault();
-    setErr("");
-    try {
-      const res = await fetch("/api/withdrawals/create", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: parseFloat(amount), currency: "USD", method, accountDetails: details }),
-      });
-      const d = await res.json();
-      if (!res.ok) throw new Error(d.error);
-      setStep("done");
-    } catch (e: any) { setErr(e.message); }
-  }
-
-  if (step === "done") return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="glass p-8 max-w-md text-center">
-        <div className="text-4xl mb-4">📤</div>
-        <h2 className="text-xl font-bold mb-2">Withdrawal Submitted</h2>
-        <p className="text-gray-400 text-sm mb-4">Pending admin approval.</p>
-        <Link href="/dashboard" className="btn-primary text-sm">Back to Dashboard</Link>
-      </div>
-    </div>
-  );
-
+  const [method, setM] = useState("UPI"); const [amount, setA] = useState(""); const [details, setD] = useState<Record<string,string>>({});
+  const [step, setStep] = useState<"form"|"done">("form"); const [err, setErr] = useState("");
+  const curMethod = METHODS.find(m=>m.id===method)!;
+  const submit = async(e:any) => { e.preventDefault(); setErr(""); try { const r=await fetch("/api/withdrawals/create",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({amount:parseFloat(amount),currency:"USD",method,accountDetails:details})}); const d=await r.json(); if(!r.ok) throw new Error(d.error); setStep("done"); } catch(e:any) { setErr(e.message); } };
+  const IP={width:"100%",padding:"12px 14px",background:"#1a1a2e",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"10px",color:"#fff",fontSize:"14px",outline:"none",boxSizing:"border-box"as const};
+  if(step==="done") return(<div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"#0a0a0f"}}><div style={{background:"rgba(255,255,255,0.03)",backdropFilter:"blur(24px)",border:"1px solid rgba(255,255,255,0.06)",borderRadius:"16px",padding:"32px",textAlign:"center",maxWidth:"400px"}}><div style={{fontSize:"40px",marginBottom:"12px"}}>📤</div><h2 style={{fontSize:"18px",fontWeight:"bold",marginBottom:"8px"}}>Withdrawal Submitted</h2><p style={{color:"#9ca3af",fontSize:"13px",marginBottom:"16px"}}>Awaiting admin approval.</p><Link href="/dashboard" style={{padding:"10px 24px",background:"linear-gradient(135deg,#d4af37,#b8942e)",color:"#000",fontWeight:"600",fontSize:"13px",borderRadius:"10px",textDecoration:"none",display:"inline-flex"}}>Dashboard</Link></div></div>);
   return (
-    <div className="min-h-screen">
-      <header className="border-b border-white/10 bg-[var(--bg-primary)]/80 backdrop-blur-xl sticky top-0 z-50">
-        <div className="max-w-4xl mx-auto px-6 h-16 flex items-center">
-          <Link href="/dashboard" className="text-sm text-gray-400 hover:text-white">← Dashboard</Link>
-          <span className="ml-auto font-serif font-semibold">Global Gemini <span className="gold-text">Wallet</span></span>
-        </div>
-      </header>
-      <main className="max-w-lg mx-auto px-6 py-8">
-        <h1 className="text-2xl font-serif font-bold mb-6">📤 Withdraw Funds</h1>
-        {err && <div className="bg-red-500/10 text-red-400 text-sm p-3 rounded-lg mb-4">{err}</div>}
-        <form onSubmit={submit} className="glass p-6 space-y-4">
-          <div><label className="text-sm text-gray-400 block mb-3">Withdraw To</label>
-            <div className="grid grid-cols-2 gap-2">
-              {[{ id: "UPI", icon: "📱", label: "UPI" }, { id: "BANK_ACCOUNT", icon: "🏦", label: "Bank" }, { id: "PAYPAL", icon: "🅿️", label: "PayPal" }, { id: "CRYPTO", icon: "₿", label: "Crypto" }].map(m => (
-                <button key={m.id} type="button" onClick={() => { setM(m.id); setD({}); }}
-                  className={`p-3 rounded-xl border text-sm ${method === m.id ? "border-gold-500/50 bg-gold-500/10" : "border-white/10 bg-white/5"}`}>
-                  <div className="text-lg">{m.icon}</div><div>{m.label}</div>
-                </button>
-              ))}
+    <div style={{minHeight:"100vh",background:"#0a0a0f",color:"#fff",fontFamily:"Inter,sans-serif",padding:"20px"}}>
+      <div style={{maxWidth:"500px",margin:"0 auto"}}>
+        <Link href="/dashboard" style={{color:"#6b7280",fontSize:"13px",textDecoration:"none"}}>← Dashboard</Link>
+        <h1 style={{fontSize:"24px",fontWeight:"bold",fontFamily:"Georgia,serif",margin:"16px 0 20px"}}>📤 Withdraw Funds</h1>
+        {err&&<div style={{background:"rgba(239,68,68,0.1)",border:"1px solid rgba(239,68,68,0.15)",color:"#ef4444",fontSize:"12px",padding:"10px",borderRadius:"8px",marginBottom:"12px"}}>{err}</div>}
+        <form onSubmit={submit} style={{background:"rgba(255,255,255,0.03)",backdropFilter:"blur(24px)",border:"1px solid rgba(255,255,255,0.06)",borderRadius:"16px",padding:"24px",display:"flex",flexDirection:"column",gap:"12px"}}>
+          <div><label style={{fontSize:"12px",color:"#6b7280",display:"block",marginBottom:"8px"}}>Withdraw To</label>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(80px,1fr))",gap:"8px"}}>
+              {METHODS.map(m=>(<button key={m.id} type="button" onClick={()=>{setM(m.id);setD({})}} style={{padding:"10px",borderRadius:"10px",border:method===m.id?"2px solid #d4af37":"1px solid rgba(255,255,255,0.1)",background:method===m.id?"rgba(212,175,55,0.1)":"rgba(255,255,255,0.03)",color:"#fff",cursor:"pointer",fontSize:"12px",textAlign:"center"}}><div style={{fontSize:"18px",marginBottom:"4px"}}>{m.icon}</div>{m.label}</button>))}
             </div>
           </div>
-          <div><label className="text-sm text-gray-400 block mb-1">Amount (USD)</label><input type="number" value={amount} onChange={e => setA(e.target.value)} className="input-luxe" placeholder="0.00" min="1" step="0.01" required /></div>
-          <div className="space-y-2">
-            {fields.map(f => (
-              <input key={f.k} type="text" value={details[f.k] || ""} onChange={e => setD({ ...details, [f.k]: e.target.value })}
-                className="input-luxe" placeholder={f.ph} required />
-            ))}
-          </div>
-          <button type="submit" className="btn-primary w-full">Submit Withdrawal</button>
+          <input type="number" step="0.01" min="1" value={amount} onChange={e=>setA(e.target.value)} placeholder="Amount (USD)" style={IP} required />
+          {curMethod.fields.map(f=>(<input key={f.k} type="text" value={details[f.k]||""} onChange={e=>setD({...details,[f.k]:e.target.value})} placeholder={f.pl} style={IP} required />))}
+          <button type="submit" style={{padding:"12px",background:"linear-gradient(135deg,#d4af37,#b8942e)",color:"#000",fontWeight:"600",fontSize:"14px",border:"none",borderRadius:"10px",cursor:"pointer"}}>Submit Withdrawal</button>
         </form>
-      </main>
+      </div>
     </div>
   );
 }
