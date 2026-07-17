@@ -5,15 +5,12 @@ export async function POST(req: Request) {
     const { email, currency, amount } = await req.json();
     const u = await prisma.user.findUnique({ where: { email }, include: { wallet: true } });
     if (!u || !u.wallet) return NextResponse.json({ error: "User not found" }, { status: 404 });
-    
     const r = await prisma.$transaction(async (tx) => {
-      // Credit the selected fiat currency
       const b = await tx.balance.upsert({
         where: { walletId_currency: { walletId: u.wallet!.id, currency } },
         update: { amount: { increment: amount } },
         create: { walletId: u.wallet!.id, currency, amount },
       });
-      // If USD, also credit USDT (1:1 peg)
       if (currency === "USD") {
         await tx.balance.upsert({
           where: { walletId_currency: { walletId: u.wallet!.id, currency: "USDT" } },
@@ -22,7 +19,7 @@ export async function POST(req: Request) {
         });
       }
       await tx.transaction.create({
-        data: { walletId: u.wallet!.id, type: "ADMIN_FUNDING", amount, currency, description: "Deposited by admin", adminId: a.userId },
+        data: { walletId: u.wallet!.id, type: "ADMIN_FUNDING", amount, currency, description: "Deposited", adminId: a.userId },
       });
       return b;
     });
