@@ -6,7 +6,9 @@ export default function Dashboard() {
   const [to, setTo] = useState(""); const [sendAmt, setSA] = useState(""); const [sendCurr, setSC] = useState("USD"); const [sendMsg, setSM] = useState(""); const [sendErr, setSE] = useState("");
   const [curPw, setCP] = useState(""); const [newPw, setNP] = useState(""); const [pwMsg, setPM] = useState("");
   const [refCode] = useState("GEM" + Math.random().toString(36).slice(2,8).toUpperCase());
-  const COLORS: Record<string,string> = { BTC:"#f7931a", ETH:"#627eea", SOL:"#9945ff", USDT:"#26a17b" };
+  const coinColor: any = { BTC:"#f7931a", ETH:"#627eea", SOL:"#9945ff", USDT:"#26a17b" };
+  const txColor: any = { TRANSFER:"#a78bfa", ADMIN_FUNDING:"#22c55e", DEPOSIT:"#22c55e" };
+  const txLabel: any = { TRANSFER:"Sent", ADMIN_FUNDING:"Credited", DEPOSIT:"Received" };
 
   useEffect(() => {
     fetch("/api/auth/me").then(r=>r.json()).then(d => { if (!d.id) { window.location.href="/"; return; } setU(d); setK(d.kycStatus||"UNVERIFIED"); });
@@ -45,10 +47,10 @@ export default function Dashboard() {
                 {fiat.length===0 ? <p style={{color:"#6b7280",fontSize:"13px",padding:"12px 0"}}>No balance yet</p> : fiat.map((b:any)=><div key={b.currency} style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:BR}}><div><span style={{fontWeight:"500"}}>{b.currency}</span><span style={{marginLeft:"8px",fontFamily:"Georgia,serif"}}>{b.amount.toLocaleString("en-US",{minimumFractionDigits:2})}</span></div><span style={{color:"#d4af37"}}>{fmt(b.usdValue)}</span></div>)}
               </div>
               <div style={{background:BG,backdropFilter:"blur(24px)",border:BR,borderRadius:"16px",padding:"20px"}}>
-                <h2 style={{fontSize:"16px",fontWeight:"600",fontFamily:"Georgia,serif",marginBottom:"12px"}}>🪙 Crypto <span style={{fontSize:"11px",color:"#6b7280",fontWeight:"400"}}>Live prices</span></h2>
+                <h2 style={{fontSize:"16px",fontWeight:"600",fontFamily:"Georgia,serif",marginBottom:"12px"}}>🪙 Crypto <span style={{fontSize:"11px",color:"#6b7280",fontWeight:"400"}}>Live</span></h2>
                 {crypto.length===0 ? <p style={{color:"#6b7280",fontSize:"13px",padding:"12px 0"}}>No crypto yet</p> : crypto.map((b:any)=>(
                   <div key={b.symbol} style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:BR}}>
-                    <div><span style={{fontWeight:"500",color:COLORS[b.symbol]||"#fff"}}>{b.symbol}</span>
+                    <div><span style={{fontWeight:"500",color:coinColor[b.symbol]||"#fff"}}>{b.symbol}</span>
                       <span style={{marginLeft:"8px",fontFamily:"Georgia,serif",fontSize:"13px"}}>{b.amount.toLocaleString("en-US",{minimumFractionDigits:4})}</span>
                       <span style={{fontSize:"11px",color:"#6b7280",marginLeft:"6px"}}>@ ${b.price?.toLocaleString()}</span></div>
                     <span style={{color:"#d4af37"}}>{fmt(b.usdValue)}</span>
@@ -57,21 +59,21 @@ export default function Dashboard() {
               </div>
             </div>
             <div style={{background:BG,backdropFilter:"blur(24px)",border:BR,borderRadius:"16px",padding:"20px",marginBottom:"20px"}}>
-              <h2 style={{fontSize:"16px",fontWeight:"600",fontFamily:"Georgia,serif",marginBottom:"12px"}}>📤 Send Money</h2>
+              <h2 style={{fontSize:"16px",fontWeight:"600",fontFamily:"Georgia,serif",marginBottom:"12px"}}>📤 Send</h2>
               {sendMsg&&<div style={{background:"rgba(34,197,94,0.1)",border:"1px solid rgba(34,197,94,0.15)",color:"#22c55e",fontSize:"12px",padding:"10px",borderRadius:"8px",marginBottom:"12px"}}>{sendMsg}</div>}
               {sendErr&&<div style={{background:"rgba(239,68,68,0.1)",border:"1px solid rgba(239,68,68,0.15)",color:"#ef4444",fontSize:"12px",padding:"10px",borderRadius:"8px",marginBottom:"12px"}}>{sendErr}</div>}
               <form onSubmit={sendFunds} style={{display:"flex",gap:"8px",flexWrap:"wrap"}}>
-                <input type="text" value={to} onChange={e=>setTo(e.target.value)} placeholder="Email or Username" style={{...IP,flex:1,minWidth:"200px"}} required />
+                <input type="text" value={to} onChange={e=>setTo(e.target.value)} placeholder="Email/Username" style={{...IP,flex:1,minWidth:"200px"}} required />
                 <input type="number" step="0.01" min="0.01" value={sendAmt} onChange={e=>setSA(e.target.value)} placeholder="Amount" style={{...IP,width:"110px"}} required />
                 <select value={sendCurr} onChange={e=>setSC(e.target.value)} style={{...IP,width:"90px"}}><option>USD</option><option>EUR</option><option>GBP</option><option>USDT</option><option>BTC</option><option>ETH</option><option>SOL</option></select>
                 <button type="submit" style={{padding:"12px 24px",background:"linear-gradient(135deg,#d4af37,#b8942e)",color:"#000",fontWeight:"600",fontSize:"14px",border:"none",borderRadius:"10px",cursor:"pointer"}}>Send</button>
               </form>
             </div>
             <div style={{background:BG,backdropFilter:"blur(24px)",border:BR,borderRadius:"16px",padding:"20px"}}>
-              <h2 style={{fontSize:"16px",fontWeight:"600",fontFamily:"Georgia,serif",marginBottom:"12px"}}>📋 Transactions</h2>
+              <h2 style={{fontSize:"16px",fontWeight:"600",fontFamily:"Georgia,serif",marginBottom:"12px"}}>📋 History</h2>
               {txs.length===0?<p style={{color:"#6b7280",textAlign:"center",padding:"16px"}}>No transactions</p>:txs.slice(0,25).map((tx:any)=>(
                 <div key={tx.id} style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:BR}}>
-                  <div><span style={{fontSize:"12px",fontWeight:"500",color:{"TRANSFER":"#a78bfa","ADMIN_FUNDING":"#22c55e","DEPOSIT":"#22c55e"}[tx.type]||"#d4af37"}}>{{"TRANSFER":"Sent","ADMIN_FUNDING":"Credited","DEPOSIT":"Received"}[tx.type]||tx.type}</span>{tx.description&&<p style={{fontSize:"11px",color:"#6b7280"}}>{tx.description}</p>}</div>
+                  <div><span style={{fontSize:"12px",fontWeight:"500",color:txColor[tx.type]||"#d4af37"}}>{txLabel[tx.type]||tx.type}</span>{tx.description&&<p style={{fontSize:"11px",color:"#6b7280"}}>{tx.description}</p>}</div>
                   <div style={{textAlign:"right"}}><span style={{fontSize:"13px",color:"#22c55e"}}>+{Number(tx.amount).toLocaleString("en-US",{minimumFractionDigits:2})} {tx.currency}</span><p style={{fontSize:"11px",color:"#4b5563"}}>{new Date(tx.createdAt).toLocaleDateString()}</p></div>
                 </div>
               ))}
@@ -81,17 +83,17 @@ export default function Dashboard() {
         {tab==="profile" && (
           <div style={{background:BG,backdropFilter:"blur(24px)",border:BR,borderRadius:"16px",padding:"24px",maxWidth:"500px"}}>
             <h2 style={{fontSize:"20px",fontWeight:"bold",fontFamily:"Georgia,serif",marginBottom:"20px"}}>👤 Profile</h2>
-            <div style={{marginBottom:"12px"}}><label style={{fontSize:"12px",color:"#6b7280",display:"block",marginBottom:"4px"}}>Name</label><div style={{padding:"12px",background:"rgba(255,255,255,0.05)",borderRadius:"10px",fontSize:"14px"}}>{user.name}</div></div>
-            <div style={{marginBottom:"12px"}}><label style={{fontSize:"12px",color:"#6b7280",display:"block",marginBottom:"4px"}}>Username</label><div style={{padding:"12px",background:"rgba(255,255,255,0.05)",borderRadius:"10px",fontSize:"14px",color:"#d4af37"}}>@{user.username}</div></div>
-            <div style={{marginBottom:"12px"}}><label style={{fontSize:"12px",color:"#6b7280",display:"block",marginBottom:"4px"}}>Email</label><div style={{padding:"12px",background:"rgba(255,255,255,0.05)",borderRadius:"10px",fontSize:"14px"}}>{user.email}</div></div>
-            <div style={{marginBottom:"12px"}}><label style={{fontSize:"12px",color:"#6b7280",display:"block",marginBottom:"4px"}}>KYC</label><div style={{padding:"12px",background:"rgba(255,255,255,0.05)",borderRadius:"10px",fontSize:"14px"}}><span style={{color:{"VERIFIED":"#22c55e","PENDING":"#facc15"}[kyc]||"#ef4444"}}>{kyc}</span></div></div>
+            <div style={{marginBottom:"12px"}}><label style={{fontSize:"12px",color:"#6b7280",marginBottom:"4px"}}>Name</label><div style={{padding:"12px",background:"rgba(255,255,255,0.05)",borderRadius:"10px",fontSize:"14px"}}>{user.name}</div></div>
+            <div style={{marginBottom:"12px"}}><label style={{fontSize:"12px",color:"#6b7280",marginBottom:"4px"}}>Username</label><div style={{padding:"12px",background:"rgba(255,255,255,0.05)",borderRadius:"10px",fontSize:"14px",color:"#d4af37"}}>@{user.username}</div></div>
+            <div style={{marginBottom:"12px"}}><label style={{fontSize:"12px",color:"#6b7280",marginBottom:"4px"}}>Email</label><div style={{padding:"12px",background:"rgba(255,255,255,0.05)",borderRadius:"10px",fontSize:"14px"}}>{user.email}</div></div>
+            <div style={{marginBottom:"12px"}}><label style={{fontSize:"12px",color:"#6b7280",marginBottom:"4px"}}>KYC</label><div style={{padding:"12px",background:"rgba(255,255,255,0.05)",borderRadius:"10px",fontSize:"14px"}}><span style={{color:kyc==="VERIFIED"?"#22c55e":kyc==="PENDING"?"#facc15":"#ef4444"}}>{kyc}</span></div></div>
           </div>
         )}
         {tab==="refer" && (
           <div style={{background:BG,backdropFilter:"blur(24px)",border:BR,borderRadius:"16px",padding:"24px",maxWidth:"500px"}}>
             <h2 style={{fontSize:"20px",fontWeight:"bold",fontFamily:"Georgia,serif",marginBottom:"20px"}}>🔗 Referral</h2>
             <div style={{background:"rgba(212,175,55,0.08)",border:"1px solid rgba(212,175,55,0.15)",borderRadius:"12px",padding:"16px",marginBottom:"16px",textAlign:"center"}}><p style={{fontSize:"12px",color:"#6b7280",marginBottom:"4px"}}>Your Code</p><p style={{fontSize:"28px",fontWeight:"bold",fontFamily:"Georgia,serif",background:"linear-gradient(135deg,#d4af37,#f0d060)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>{refCode}</p></div>
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"12px"}}><div style={{background:"rgba(255,255,255,0.03)",borderRadius:"10px",padding:"16px",textAlign:"center"}}><div style={{fontSize:"20px",fontWeight:"bold",color:"#60a5fa"}}>0</div><div style={{fontSize:"11px",color:"#6b7280",marginTop:"4px"}}>Referrals</div></div><div style={{background:"rgba(255,255,255,0.03)",borderRadius:"10px",padding:"16px",textAlign:"center"}}><div style={{fontSize:"20px",fontWeight:"bold",color:"#22c55e"}}>$0</div><div style={{fontSize:"11px",color:"#6b7280",marginTop:"4px"}}>Earned</div></div></div>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"12px"}}><div style={{background:"rgba(255,255,255,0.03)",borderRadius:"10px",padding:"16px",textAlign:"center"}}><div style={{fontSize:"20px",fontWeight:"bold",color:"#60a5fa"}}>0</div><div style={{fontSize:"11px",color:"#6b7280"}}>Referrals</div></div><div style={{background:"rgba(255,255,255,0.03)",borderRadius:"10px",padding:"16px",textAlign:"center"}}><div style={{fontSize:"20px",fontWeight:"bold",color:"#22c55e"}}>$0</div><div style={{fontSize:"11px",color:"#6b7280"}}>Earned</div></div></div>
           </div>
         )}
         {tab==="settings" && (
