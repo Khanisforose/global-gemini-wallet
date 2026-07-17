@@ -6,6 +6,9 @@ export default function Dashboard() {
   const [to, setTo] = useState(""); const [sendAmt, setSA] = useState(""); const [sendCurr, setSC] = useState("USD"); const [sendMsg, setSM] = useState(""); const [sendErr, setSE] = useState("");
   const [curPw, setCP] = useState(""); const [newPw, setNP] = useState(""); const [pwMsg, setPM] = useState("");
   const [refCode] = useState("GEM" + Math.random().toString(36).slice(2,8).toUpperCase());
+  const coinColors: Record<string,string> = { BTC:"#f7931a", ETH:"#627eea", SOL:"#9945ff", USDT:"#26a17b" };
+  const txColors: Record<string,string> = { TRANSFER:"#a78bfa", ADMIN_FUNDING:"#22c55e", DEPOSIT:"#22c55e" };
+  const txLabels: Record<string,string> = { TRANSFER:"Sent", ADMIN_FUNDING:"Credited", DEPOSIT:"Received" };
 
   useEffect(() => {
     fetch("/api/auth/me").then(r=>r.json()).then(d => { if (!d.id) { window.location.href="/"; return; } setU(d); setK(d.kycStatus||"UNVERIFIED"); });
@@ -56,10 +59,10 @@ export default function Dashboard() {
                 ))}
               </div>
               <div className="card" style={{padding:"24px"}}>
-                <h3 className="font-display" style={{fontSize:"16px",fontWeight:"600",marginBottom:"16px"}}>🪙 Crypto <span className="text-muted" style={{fontSize:"12px",fontWeight:"400"}}>Live market</span></h3>
+                <h3 className="font-display" style={{fontSize:"16px",fontWeight:"600",marginBottom:"16px"}}>🪙 Crypto <span className="text-muted" style={{fontSize:"12px",fontWeight:"400"}}>Live</span></h3>
                 {crypto.length===0 ? <p className="text-muted text-sm">No crypto yet</p> : crypto.map((b:any)=>(
                   <div key={b.symbol} className="row-between" style={{padding:"10px 0",borderBottom:"1px solid rgba(255,255,255,0.04)"}}>
-                    <div><span style={{fontWeight:"500",color:{"BTC":"#f7931a","ETH":"#627eea","SOL":"#9945ff","USDT":"#26a17b"}[b.symbol]||"#fff"}}>{b.symbol}</span>
+                    <div><span style={{fontWeight:"500",color:coinColors[b.symbol]||"#fff"}}>{b.symbol}</span>
                       <span style={{marginLeft:"8px",fontFamily:"Georgia,serif"}}>{b.amount.toLocaleString("en-US",{minimumFractionDigits:4})}</span>
                       <span className="text-muted text-xs" style={{marginLeft:"6px"}}>@ ${b.price?.toLocaleString()}</span></div>
                     <span className="text-gradient">{fmt(b.usdValue)}</span>
@@ -84,7 +87,7 @@ export default function Dashboard() {
               <h3 className="font-display" style={{fontSize:"16px",fontWeight:"600",marginBottom:"16px"}}>📋 Transactions</h3>
               {txs.length===0 ? <p className="text-muted text-sm" style={{textAlign:"center",padding:"20px"}}>No transactions yet</p> : txs.slice(0,25).map((tx:any)=>(
                 <div key={tx.id} className="row-between" style={{padding:"10px 0",borderBottom:"1px solid rgba(255,255,255,0.04)"}}>
-                  <div><span style={{fontSize:"13px",fontWeight:"500",color:{"TRANSFER":"#a78bfa","ADMIN_FUNDING":"#22c55e","DEPOSIT":"#22c55e"}[tx.type]||"#d4af37"}}>{{"TRANSFER":"Sent","ADMIN_FUNDING":"Credited","DEPOSIT":"Received"}[tx.type]||tx.type}</span>{tx.description&&<p className="text-xs text-muted">{tx.description}</p>}</div>
+                  <div><span style={{fontSize:"13px",fontWeight:"500",color:txColors[tx.type]||"#d4af37"}}>{txLabels[tx.type]||tx.type}</span>{tx.description&&<p className="text-xs text-muted">{tx.description}</p>}</div>
                   <div style={{textAlign:"right"}}><span style={{fontSize:"13px",color:"#22c55e"}}>+{Number(tx.amount).toLocaleString("en-US",{minimumFractionDigits:2})} {tx.currency}</span><p className="text-xs" style={{color:"#4b5563"}}>{new Date(tx.createdAt).toLocaleDateString()}</p></div>
                 </div>
               ))}
@@ -94,7 +97,7 @@ export default function Dashboard() {
 
         {tab==="profile" && <div className="card fade-in" style={{padding:"32px",maxWidth:"520px"}}>
           <h2 className="font-display text-xl" style={{marginBottom:"24px"}}>👤 Profile</h2>
-          {[{l:"Name",v:user.name},{l:"Username",v:"@"+user.username,c:"#d4af37"},{l:"Email",v:user.email},{l:"KYC",v:kyc,c:{"VERIFIED":"#22c55e","PENDING":"#facc15"}[kyc]||"#ef4444"}].map(i=>(
+          {[{l:"Name",v:user.name},{l:"Username",v:"@"+user.username,c:"#d4af37"},{l:"Email",v:user.email},{l:"KYC",v:kyc,c:kyc==="VERIFIED"?"#22c55e":kyc==="PENDING"?"#facc15":"#ef4444"}].map(i=>(
             <div key={i.l} style={{marginBottom:"16px"}}><label className="text-xs text-muted" style={{display:"block",marginBottom:"4px"}}>{i.l}</label>
               <div style={{padding:"12px 16px",background:"rgba(255,255,255,0.04)",borderRadius:"10px",fontSize:"14px",color:i.c||"#fff"}}>{i.v}</div></div>
           ))}
