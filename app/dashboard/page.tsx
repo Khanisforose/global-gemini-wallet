@@ -6,6 +6,7 @@ export default function Dashboard() {
   const [to, setTo] = useState(""); const [sendAmt, setSA] = useState(""); const [sendCurr, setSC] = useState("USD"); const [sendMsg, setSM] = useState(""); const [sendErr, setSE] = useState("");
   const [curPw, setCP] = useState(""); const [newPw, setNP] = useState(""); const [pwMsg, setPM] = useState("");
   const [refCode] = useState("GEM" + Math.random().toString(36).slice(2,8).toUpperCase());
+  const COLORS: Record<string,string> = { BTC:"#f7931a", ETH:"#627eea", SOL:"#9945ff", USDT:"#26a17b" };
 
   useEffect(() => {
     fetch("/api/auth/me").then(r=>r.json()).then(d => { if (!d.id) { window.location.href="/"; return; } setU(d); setK(d.kycStatus||"UNVERIFIED"); });
@@ -40,14 +41,14 @@ export default function Dashboard() {
             </div>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"20px",marginBottom:"20px"}}>
               <div style={{background:BG,backdropFilter:"blur(24px)",border:BR,borderRadius:"16px",padding:"20px"}}>
-                <h2 style={{fontSize:"16px",fontWeight:"600",fontFamily:"Georgia,serif",marginBottom:"12px"}}>💵 Fiat <span style={{fontSize:"11px",color:"#6b7280",fontWeight:"400"}}>Live rates</span></h2>
-                {fiat.length===0 ? <p style={{color:"#6b7280",fontSize:"13px",padding:"12px 0"}}>No fiat balance yet</p> : fiat.map((b:any)=><div key={b.currency} style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:BR}}><div><span style={{fontWeight:"500"}}>{b.currency}</span><span style={{marginLeft:"8px",fontFamily:"Georgia,serif"}}>{b.amount.toLocaleString("en-US",{minimumFractionDigits:2})}</span></div><span style={{color:"#d4af37"}}>{fmt(b.usdValue)}</span></div>)}
+                <h2 style={{fontSize:"16px",fontWeight:"600",fontFamily:"Georgia,serif",marginBottom:"12px"}}>💵 Fiat</h2>
+                {fiat.length===0 ? <p style={{color:"#6b7280",fontSize:"13px",padding:"12px 0"}}>No balance yet</p> : fiat.map((b:any)=><div key={b.currency} style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:BR}}><div><span style={{fontWeight:"500"}}>{b.currency}</span><span style={{marginLeft:"8px",fontFamily:"Georgia,serif"}}>{b.amount.toLocaleString("en-US",{minimumFractionDigits:2})}</span></div><span style={{color:"#d4af37"}}>{fmt(b.usdValue)}</span></div>)}
               </div>
               <div style={{background:BG,backdropFilter:"blur(24px)",border:BR,borderRadius:"16px",padding:"20px"}}>
-                <h2 style={{fontSize:"16px",fontWeight:"600",fontFamily:"Georgia,serif",marginBottom:"12px"}}>🪙 Crypto <span style={{fontSize:"11px",color:"#6b7280",fontWeight:"400"}}>Live market prices</span></h2>
-                {crypto.length===0 ? <p style={{color:"#6b7280",fontSize:"13px",padding:"12px 0"}}>No crypto balance yet</p> : crypto.map((b:any)=>(
+                <h2 style={{fontSize:"16px",fontWeight:"600",fontFamily:"Georgia,serif",marginBottom:"12px"}}>🪙 Crypto <span style={{fontSize:"11px",color:"#6b7280",fontWeight:"400"}}>Live prices</span></h2>
+                {crypto.length===0 ? <p style={{color:"#6b7280",fontSize:"13px",padding:"12px 0"}}>No crypto yet</p> : crypto.map((b:any)=>(
                   <div key={b.symbol} style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:BR}}>
-                    <div><span style={{fontWeight:"500",color:{"BTC":"#f7931a","ETH":"#627eea","SOL":"#9945ff","USDT":"#26a17b"}[b.symbol]||"#fff"}}>{b.symbol}</span>
+                    <div><span style={{fontWeight:"500",color:COLORS[b.symbol]||"#fff"}}>{b.symbol}</span>
                       <span style={{marginLeft:"8px",fontFamily:"Georgia,serif",fontSize:"13px"}}>{b.amount.toLocaleString("en-US",{minimumFractionDigits:4})}</span>
                       <span style={{fontSize:"11px",color:"#6b7280",marginLeft:"6px"}}>@ ${b.price?.toLocaleString()}</span></div>
                     <span style={{color:"#d4af37"}}>{fmt(b.usdValue)}</span>
@@ -79,7 +80,7 @@ export default function Dashboard() {
         )}
         {tab==="profile" && (
           <div style={{background:BG,backdropFilter:"blur(24px)",border:BR,borderRadius:"16px",padding:"24px",maxWidth:"500px"}}>
-            <h2 style={{fontSize:"20px",fontWeight:"bold",fontFamily:"Georgia,serif",marginBottom:"20px"}}>👤 My Profile</h2>
+            <h2 style={{fontSize:"20px",fontWeight:"bold",fontFamily:"Georgia,serif",marginBottom:"20px"}}>👤 Profile</h2>
             <div style={{marginBottom:"12px"}}><label style={{fontSize:"12px",color:"#6b7280",display:"block",marginBottom:"4px"}}>Name</label><div style={{padding:"12px",background:"rgba(255,255,255,0.05)",borderRadius:"10px",fontSize:"14px"}}>{user.name}</div></div>
             <div style={{marginBottom:"12px"}}><label style={{fontSize:"12px",color:"#6b7280",display:"block",marginBottom:"4px"}}>Username</label><div style={{padding:"12px",background:"rgba(255,255,255,0.05)",borderRadius:"10px",fontSize:"14px",color:"#d4af37"}}>@{user.username}</div></div>
             <div style={{marginBottom:"12px"}}><label style={{fontSize:"12px",color:"#6b7280",display:"block",marginBottom:"4px"}}>Email</label><div style={{padding:"12px",background:"rgba(255,255,255,0.05)",borderRadius:"10px",fontSize:"14px"}}>{user.email}</div></div>
@@ -88,7 +89,7 @@ export default function Dashboard() {
         )}
         {tab==="refer" && (
           <div style={{background:BG,backdropFilter:"blur(24px)",border:BR,borderRadius:"16px",padding:"24px",maxWidth:"500px"}}>
-            <h2 style={{fontSize:"20px",fontWeight:"bold",fontFamily:"Georgia,serif",marginBottom:"20px"}}>🔗 Referral Program</h2>
+            <h2 style={{fontSize:"20px",fontWeight:"bold",fontFamily:"Georgia,serif",marginBottom:"20px"}}>🔗 Referral</h2>
             <div style={{background:"rgba(212,175,55,0.08)",border:"1px solid rgba(212,175,55,0.15)",borderRadius:"12px",padding:"16px",marginBottom:"16px",textAlign:"center"}}><p style={{fontSize:"12px",color:"#6b7280",marginBottom:"4px"}}>Your Code</p><p style={{fontSize:"28px",fontWeight:"bold",fontFamily:"Georgia,serif",background:"linear-gradient(135deg,#d4af37,#f0d060)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>{refCode}</p></div>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"12px"}}><div style={{background:"rgba(255,255,255,0.03)",borderRadius:"10px",padding:"16px",textAlign:"center"}}><div style={{fontSize:"20px",fontWeight:"bold",color:"#60a5fa"}}>0</div><div style={{fontSize:"11px",color:"#6b7280",marginTop:"4px"}}>Referrals</div></div><div style={{background:"rgba(255,255,255,0.03)",borderRadius:"10px",padding:"16px",textAlign:"center"}}><div style={{fontSize:"20px",fontWeight:"bold",color:"#22c55e"}}>$0</div><div style={{fontSize:"11px",color:"#6b7280",marginTop:"4px"}}>Earned</div></div></div>
           </div>
@@ -101,7 +102,7 @@ export default function Dashboard() {
               <form onSubmit={changePw} style={{display:"flex",flexDirection:"column",gap:"12px"}}>
                 <input type="password" value={curPw} onChange={e=>setCP(e.target.value)} placeholder="Current password" style={IP} required />
                 <input type="password" value={newPw} onChange={e=>setNP(e.target.value)} placeholder="New password" style={IP} required />
-                <button type="submit" style={{padding:"12px",background:"linear-gradient(135deg,#d4af37,#b8942e)",color:"#000",fontWeight:"600",fontSize:"14px",border:"none",borderRadius:"10px",cursor:"pointer"}}>Change Password</button>
+                <button type="submit" style={{padding:"12px",background:"linear-gradient(135deg,#d4af37,#b8942e)",color:"#000",fontWeight:"600",fontSize:"14px",border:"none",borderRadius:"10px",cursor:"pointer"}}>Change</button>
               </form>
             </div>
           </div>
