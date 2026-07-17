@@ -1,11 +1,9 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 export default function AdminPage() {
-  const r = useRouter();
-  const [u, setU] = useState<any>(null);
+  const r = typeof window !== "undefined" ? null : null;
   const [users, setUsers] = useState<any[]>([]);
   const [email, setE] = useState("");
   const [curr, setC] = useState("USD");
@@ -14,99 +12,90 @@ export default function AdminPage() {
   const [err, setErr] = useState("");
 
   useEffect(() => {
-    fetch("/api/auth/me").then(r => r.json()).then(d => {
-      if (d.role !== "ADMIN") { r.push("/"); return; }
-      setU(d);
-      fetch("/api/admin/users").then(r => r.json()).then(d => setUsers(d.users || [])).catch(() => {});
-    }).catch(() => r.push("/"));
-  }, [r]);
+    fetch("/api/auth/me").then(r=>r.json()).then(d => {
+      if (d.role !== "ADMIN") { window.location.href = "/"; return; }
+      fetch("/api/admin/users").then(r=>r.json()).then(d => setUsers(d.users||[]));
+    });
+  }, []);
 
   const fund = async (e: any) => {
     e.preventDefault();
     setMsg(""); setErr("");
     try {
       const res = await fetch("/api/admin/fund", {
-        method: "POST", headers: { "Content-Type": "application/json" },
+        method: "POST", headers: {"Content-Type":"application/json"},
         body: JSON.stringify({ email, currency: curr, amount: parseFloat(amt) }),
       });
       const d = await res.json();
       if (!res.ok) throw new Error(d.error);
-      setMsg(`✅ Funded ${email} with ${amt} ${curr}`);
+      setMsg(`✅ Credited ${amt} ${curr} to ${email}`);
       setA("");
     } catch (e: any) { setErr(e.message); }
   };
 
-  if (!u) return null;
-
-  const CURRENCIES = ["USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD", "CNY", "INR", "BRL", "MXN", "SGD", "NZD", "KRW", "SEK", "TRY", "AED"];
+  const CURRENCIES = ["USD","EUR","GBP","JPY","CHF","CAD","AUD","CNY","INR","BRL","MXN","SGD","NZD","KRW","SEK","TRY","AED"];
 
   return (
-    <div className="min-h-screen">
-      <header className="border-b border-white/10 bg-[var(--bg-primary)]/80 backdrop-blur-xl sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <span className="font-serif font-semibold">Global Gemini <span className="gold-text">Wallet</span> <span className="text-xs bg-gold-500/10 text-gold-400 px-2 py-0.5 rounded-full">Admin</span></span>
-          <button onClick={async () => { await fetch("/api/auth/signout", { method: "POST" }); r.push("/"); }} className="text-sm text-gray-400 hover:text-white">Sign Out</button>
-        </div>
-      </header>
+    <div style={{minHeight:"100vh",background:"#0a0a0f",color:"#fff",fontFamily:"Inter,sans-serif"}}>
+      <div style={{borderBottom:"1px solid rgba(255,255,255,0.08)",padding:"16px 24px",display:"flex",alignItems:"center",justifyContent:"space-between",maxWidth:"1100px",margin:"0 auto"}}>
+        <span style={{fontFamily:"Georgia,serif",fontSize:"18px",fontWeight:"600"}}>Global Gemini <span className="gold-text">Wallet</span> <span style={{fontSize:"11px",background:"rgba(212,175,55,0.1)",color:"#d4af37",padding:"2px 8px",borderRadius:"100px",marginLeft:"8px"}}>Admin</span></span>
+        <button onClick={async()=>{await fetch("/api/auth/signout",{method:"POST"});window.location.href="/";}} style={{fontSize:"13px",color:"#6b7280",background:"none",border:"none",cursor:"pointer"}}>Sign Out</button>
+      </div>
 
-      <main className="max-w-6xl mx-auto px-6 py-8">
-        <h1 className="text-2xl font-serif font-bold gold-text mb-6">⚡ Admin Dashboard</h1>
+      <div style={{maxWidth:"1100px",margin:"0 auto",padding:"24px"}}>
+        <h1 style={{fontSize:"24px",fontWeight:"bold",fontFamily:"Georgia,serif",marginBottom:"16px",background:"linear-gradient(135deg,#d4af37,#f0d060)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>⚡ Admin Dashboard</h1>
 
         {/* Tabs */}
-        <div className="flex gap-2 mb-6 flex-wrap">
-          <Link href="/admin" className="btn-primary text-sm">💫 Fund Users</Link>
-          <Link href="/admin/kyc" className="btn-secondary text-sm">📋 KYC Queue</Link>
-          <Link href="/admin/deposits" className="btn-secondary text-sm">📥 Deposits</Link>
-          <Link href="/admin/withdrawals" className="btn-secondary text-sm">📤 Withdrawals</Link>
+        <div style={{display:"flex",gap:"8px",marginBottom:"20px",flexWrap:"wrap"}}>
+          <Link href="/admin" style={{display:"inline-flex",padding:"10px 20px",background:"linear-gradient(135deg,#d4af37,#b8942e)",color:"#000",fontWeight:"600",fontSize:"13px",borderRadius:"10px",textDecoration:"none"}}>💫 Credit Users</Link>
+          <Link href="/admin/kyc" style={{display:"inline-flex",padding:"10px 20px",background:"rgba(255,255,255,0.05)",color:"#e5e7eb",fontWeight:"500",fontSize:"13px",borderRadius:"10px",textDecoration:"none",border:"1px solid rgba(255,255,255,0.1)"}}>📋 KYC</Link>
+          <Link href="/admin/deposits" style={{display:"inline-flex",padding:"10px 20px",background:"rgba(255,255,255,0.05)",color:"#e5e7eb",fontWeight:"500",fontSize:"13px",borderRadius:"10px",textDecoration:"none",border:"1px solid rgba(255,255,255,0.1)"}}>📥 Deposits</Link>
+          <Link href="/admin/withdrawals" style={{display:"inline-flex",padding:"10px 20px",background:"rgba(255,255,255,0.05)",color:"#e5e7eb",fontWeight:"500",fontSize:"13px",borderRadius:"10px",textDecoration:"none",border:"1px solid rgba(255,255,255,0.1)"}}>📤 Withdrawals</Link>
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-4 gap-4 mb-6">
-          <div className="glass p-4 text-center"><div className="text-2xl font-bold text-blue-400">{users.length}</div><div className="text-xs text-gray-500">Users</div></div>
-          <div className="glass p-4 text-center"><div className="text-2xl font-bold text-yellow-400">{users.filter((u: any) => u.kycStatus === "PENDING").length}</div><div className="text-xs text-gray-500">KYC Pending</div></div>
-          <div className="glass p-4 text-center"><div className="text-2xl font-bold text-green-400">{users.filter((u: any) => u.kycStatus === "VERIFIED").length}</div><div className="text-xs text-gray-500">KYC Verified</div></div>
-          <div className="glass p-4 text-center"><div className="text-2xl font-bold text-purple-400">{users.filter((u: any) => u.role === "USER").length}</div><div className="text-xs text-gray-500">Active Users</div></div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(120px,1fr))",gap:"12px",marginBottom:"20px"}}>
+          <div style={{background:"rgba(255,255,255,0.04)",backdropFilter:"blur(24px)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"12px",padding:"16px",textAlign:"center"}}><div style={{fontSize:"24px",fontWeight:"bold",color:"#60a5fa"}}>{users.length}</div><div style={{fontSize:"11px",color:"#6b7280",marginTop:"4px"}}>Users</div></div>
+          <div style={{background:"rgba(255,255,255,0.04)",backdropFilter:"blur(24px)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"12px",padding:"16px",textAlign:"center"}}><div style={{fontSize:"24px",fontWeight:"bold",color:"#facc15"}}>{users.filter((u:any)=>u.kycStatus==="PENDING").length}</div><div style={{fontSize:"11px",color:"#6b7280",marginTop:"4px"}}>KYC Pending</div></div>
+          <div style={{background:"rgba(255,255,255,0.04)",backdropFilter:"blur(24px)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"12px",padding:"16px",textAlign:"center"}}><div style={{fontSize:"24px",fontWeight:"bold",color:"#22c55e"}}>{users.filter((u:any)=>u.kycStatus==="VERIFIED").length}</div><div style={{fontSize:"11px",color:"#6b7280",marginTop:"4px"}}>Verified</div></div>
         </div>
 
-        {/* Fund Form */}
-        <div className="glass p-6 max-w-lg mb-6">
-          <h2 className="text-lg font-serif font-semibold mb-4">💫 Fund a User</h2>
-          {msg && <div className="bg-green-500/10 text-green-400 text-sm p-3 rounded-lg mb-3">{msg}</div>}
-          {err && <div className="bg-red-500/10 text-red-400 text-sm p-3 rounded-lg mb-3">{err}</div>}
-          <form onSubmit={fund} className="space-y-3">
-            <select value={email} onChange={e => setE(e.target.value)} className="input-luxe" required>
+        {/* Credit Form */}
+        <div style={{background:"rgba(255,255,255,0.04)",backdropFilter:"blur(24px)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"16px",padding:"24px",marginBottom:"20px",maxWidth:"500px"}}>
+          <h2 style={{fontSize:"18px",fontWeight:"600",fontFamily:"Georgia,serif",marginBottom:"16px"}}>💫 Credit a User</h2>
+          {msg && <div style={{background:"rgba(34,197,94,0.1)",border:"1px solid rgba(34,197,94,0.2)",color:"#22c55e",fontSize:"13px",padding:"10px",borderRadius:"8px",marginBottom:"12px"}}>{msg}</div>}
+          {err && <div style={{background:"rgba(239,68,68,0.1)",border:"1px solid rgba(239,68,68,0.2)",color:"#ef4444",fontSize:"13px",padding:"10px",borderRadius:"8px",marginBottom:"12px"}}>{err}</div>}
+          <form onSubmit={fund} style={{display:"flex",flexDirection:"column",gap:"12px"}}>
+            <select value={email} onChange={e=>setE(e.target.value)} style={{width:"100%",padding:"12px 16px",background:"#1a1a2e",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"10px",color:"#fff",fontSize:"14px",outline:"none"}} required>
               <option value="">Select user...</option>
-              {users.filter((u: any) => u.role !== "ADMIN").map((u: any) => (
+              {users.filter((u:any)=>u.role!=="ADMIN").map((u:any)=>(
                 <option key={u.id} value={u.email}>{u.name} ({u.email}) — KYC: {u.kycStatus}</option>
               ))}
             </select>
-            <div className="flex gap-3">
-              <select value={curr} onChange={e => setC(e.target.value)} className="input-luxe w-28">
-                {CURRENCIES.map(c => <option key={c} value={c}>{c}</option>)}
+            <div style={{display:"flex",gap:"8px"}}>
+              <select value={curr} onChange={e=>setC(e.target.value)} style={{width:"120px",padding:"12px 16px",background:"#1a1a2e",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"10px",color:"#fff",fontSize:"14px",outline:"none"}}>
+                {CURRENCIES.map(c=><option key={c} value={c}>{c}</option>)}
               </select>
-              <input type="number" step="0.01" min="0.01" value={amt} onChange={e => setA(e.target.value)} className="input-luxe flex-1" placeholder="Enter any amount..." required />
+              <input type="number" step="0.01" min="0.01" value={amt} onChange={e=>setA(e.target.value)} placeholder="Enter amount..." style={{flex:1,padding:"12px 16px",background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"10px",color:"#fff",fontSize:"14px",outline:"none"}} required />
             </div>
-            <button type="submit" className="btn-primary w-full">💫 Fund Now</button>
+            <button type="submit" style={{width:"100%",padding:"12px",background:"linear-gradient(135deg,#d4af37,#b8942e)",color:"#000",fontWeight:"600",fontSize:"14px",border:"none",borderRadius:"10px",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:"8px"}}>💫 Credit Now</button>
           </form>
         </div>
 
-        {/* Users List */}
-        <div className="glass p-6">
-          <h2 className="text-lg font-serif font-semibold mb-4">👥 All Users</h2>
-          {users.map((u: any) => (
-            <div key={u.id} className="flex justify-between items-center py-2 border-b border-white/5">
-              <div>
-                <span className="font-medium text-sm">{u.name}</span>
-                <span className="text-gray-500 text-xs ml-2">{u.email}</span>
-              </div>
-              <div className="flex gap-2">
-                <span className={`text-xs px-2 py-0.5 rounded-full ${u.kycStatus === "VERIFIED" ? "bg-green-500/20 text-green-400" : u.kycStatus === "PENDING" ? "bg-yellow-500/20 text-yellow-400" : "bg-gray-500/20 text-gray-400"}`}>{u.kycStatus}</span>
-                <span className="text-xs text-gray-500">{u.role}</span>
+        {/* Users */}
+        <div style={{background:"rgba(255,255,255,0.04)",backdropFilter:"blur(24px)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"16px",padding:"20px"}}>
+          <h2 style={{fontSize:"16px",fontWeight:"600",fontFamily:"Georgia,serif",marginBottom:"12px"}}>👥 All Users</h2>
+          {users.map((u:any)=>(
+            <div key={u.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderBottom:"1px solid rgba(255,255,255,0.04)"}}>
+              <div><span style={{fontSize:"14px",fontWeight:"500"}}>{u.name}</span><span style={{fontSize:"12px",color:"#6b7280",marginLeft:"8px"}}>{u.email}</span></div>
+              <div style={{display:"flex",gap:"8px",alignItems:"center"}}>
+                <span style={{fontSize:"11px",padding:"2px 8px",borderRadius:"100px",background: u.kycStatus==="VERIFIED"?"rgba(34,197,94,0.15)":u.kycStatus==="PENDING"?"rgba(250,204,21,0.15)":"rgba(107,114,128,0.15)",color: u.kycStatus==="VERIFIED"?"#22c55e":u.kycStatus==="PENDING"?"#facc15":"#6b7280"}}>{u.kycStatus}</span>
+                <span style={{fontSize:"11px",color:"#6b7280"}}>{u.role}</span>
               </div>
             </div>
           ))}
         </div>
-      </main>
+      </div>
     </div>
   );
 }

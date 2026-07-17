@@ -21,7 +21,7 @@ export async function POST(req: Request) {
     const base64 = Buffer.from(buffer).toString("base64");
     const imageUrl = `data:${documentImage.type};base64,${base64}`;
 
-    await prisma.user.update({
+    const updated = await prisma.user.update({
       where: { id: session.userId },
       data: {
         kycStatus: "PENDING",
@@ -33,9 +33,9 @@ export async function POST(req: Request) {
       },
     });
 
-    return NextResponse.json({ success: true, message: "KYC submitted for verification" });
-  } catch (e) {
+    return NextResponse.json({ success: true, kycStatus: updated.kycStatus });
+  } catch (e: any) {
     console.error("KYC error:", e);
-    return NextResponse.json({ error: "Submission failed" }, { status: 500 });
+    return NextResponse.json({ error: e.message || "Submission failed" }, { status: 500 });
   }
 }
