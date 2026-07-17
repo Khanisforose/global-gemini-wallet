@@ -155,7 +155,7 @@ export default function HomePage() {
         <div style={{padding:"80px 5%",maxWidth:"900px",margin:"0 auto"}}>
           <div style={{textAlign:"center",marginBottom:"48px"}}>
             <h2 className="font-display" style={{fontSize:"36px",fontWeight:"700",marginBottom:"12px"}}>About <span className="text-gradient">Us</span></h2>
-            <p style={{color:"#6b7280",fontSize:"15px"}}">The future of multi-currency wealth management</p>
+            <p style={{color:"#6b7280",fontSize:"15px"}}>The future of multi-currency wealth management</p>
           </div>
           <div className="card" style={{padding:"40px",lineHeight:"1.9",color:"#9ca3af",fontSize:"14px",marginBottom:"32px"}}>
             <p style={{marginBottom:"16px"}}>Global Gemini Wallet is a next-generation financial platform that combines traditional fiat currencies with cryptocurrencies in a single, unified interface. We provide individuals and businesses with the tools to manage, send, and grow their wealth across 170+ currencies.</p>
