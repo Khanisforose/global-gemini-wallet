@@ -1,10 +1,2 @@
-import { NextResponse } from "next/server"; import { prisma } from "@/lib/db"; import { getSession, hashPassword, verifyPassword } from "@/lib/auth";
-export async function POST(req: Request) {
-  try { const s = await getSession(); if (!s) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    const { currentPassword, newPassword } = await req.json();
-    const user = await prisma.user.findUnique({ where: { id: s.userId } });
-    if (!user || !(await verifyPassword(currentPassword, user.password))) return NextResponse.json({ error: "Current password is wrong" }, { status: 400 });
-    await prisma.user.update({ where: { id: s.userId }, data: { password: await hashPassword(newPassword) } });
-    return NextResponse.json({ success: true });
-  } catch { return NextResponse.json({ error: "Failed" }, { status: 500 }); }
-}
+import{NextResponse}from"next/server";import{prisma}from"@/lib/db";import{getSession,hashPassword,verifyPassword}from"@/lib/auth";
+export async function POST(req:Request){try{const s=await getSession();if(!s)return NextResponse.json({error:"Unauthorized"},{status:401});const{currentPassword,newPassword}=await req.json();const user=await prisma.user.findUnique({where:{id:s.userId}});if(!user||!(await verifyPassword(currentPassword,user.password)))return NextResponse.json({error:"Wrong password"},{status:400});await prisma.user.update({where:{id:s.userId},data:{password:await hashPassword(newPassword)}});return NextResponse.json({success:true})}catch{return NextResponse.json({error:"Failed"},{status:500})}

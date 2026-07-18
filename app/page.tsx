@@ -1,116 +1,77 @@
-"use client"; import { useState } from "react";
-export default function HomePage() {
-  const [page, setPage] = useState("home");
-  const [isLogin, setIsLogin] = useState(true);
-  const [email, setE] = useState(""); const [pass, setP] = useState(""); const [name, setN] = useState(""); const [user, setUser] = useState(""); const [refer, setRef] = useState(""); const [err, setErr] = useState(""); const [msg, setMsg] = useState(""); const [load, setL] = useState(false);
-  const [signupEmail, setSE] = useState("");
+"use client";import{useState}from"react";
+export default function Home(){const[pg,setPg]=useState("home");const[lg,setLg]=useState(true);const[em,setEm]=useState("");const[pw,setPw]=useState("");const[nm,setNm]=useState("");const[us,setUs]=useState("");const[ph,setPh]=useState("");const[cy,setCy]=useState("");const[er,setEr]=useState("");const[msg,setMsg]=useState("");const[ld,setLd]=useState(false);const[se,setSe]=useState("")
+const hL=async(e:any)=>{e.preventDefault();setEr("");setLd(true);try{const r=await fetch("/api/auth/signin",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:em,password:pw})});const d=await r.json();if(!r.ok)throw new Error(d.error);window.location.href=d.user.role==="ADMIN"?"/admin":"/dashboard"}catch(e:any){setEr(e.message)}finally{setLd(false)}}
+const hR=async(e:any)=>{e.preventDefault();setEr("");setLd(true);try{const r=await fetch("/api/auth/signup",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:se,username:us,name:nm,password:pw,country:cy,phone:ph})});const d=await r.json();if(!r.ok)throw new Error(d.error);setMsg("✅ Account created! Please sign in.");setLg(true);setEm(se);setPw("")}catch(e:any){setEr(e.message)}finally{setLd(false)}}
+const nav=[{k:"home",l:"Home"},{k:"features",l:"Features"},{k:"currencies",l:"Currencies"},{k:"about",l:"About"}]
+const IP={width:"100%",padding:"14px 18px",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"12px",color:"#fff",fontSize:"14px",outline:"none",boxSizing:"border-box"as const}
+return(<div style={{minHeight:"100vh",background:"#050505",color:"#fff",fontFamily:"Inter,sans-serif"}}>
+<div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 4%",borderBottom:"1px solid rgba(255,255,255,0.05)",backdropFilter:"blur(24px)",background:"rgba(5,5,5,0.85)",position:"sticky",top:0,zIndex:100}}>
+<span style={{fontWeight:700,fontSize:18}}>🌍 Global Gemini <span className="text-g">Wallet</span></span>
+<div style={{display:"flex",gap:24,alignItems:"center"}}>{nav.map(n=>(<button key={n.k} onClick={()=>setPg(n.k)} style={{fontSize:14,color:pg===n.k?"#FFD700":"#9ca3af",background:"none",border:"none",cursor:"pointer",fontWeight:pg===n.k?600:400}}>{n.l}</button>))}
+<button onClick={()=>{setPg("home");setLg(true)}} className="btn btn-s btn-sm">Sign In</button>
+<button onClick={()=>{setPg("home");setLg(false)}} className="btn btn-p btn-sm">Get Started</button>
+</div></div>
 
-  async function handleLogin(e:any) { e.preventDefault(); setErr(""); setL(true); try { const r=await fetch("/api/auth/signin",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email,password:pass})}); const d=await r.json(); if(!r.ok) throw new Error(d.error); window.location.href = d.user.role==="ADMIN"?"/admin":"/dashboard"; } catch(e:any) { setErr(e.message); } finally { setL(false); } }
-  async function handleSignup(e:any) { e.preventDefault(); if(pass.length<6){setErr("Password min 6 chars");return} setErr(""); setL(true); try { const r=await fetch("/api/auth/signup",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:signupEmail,username:user,name,password:pass,referralCode:refer||undefined})}); const d=await r.json(); if(!r.ok) throw new Error(d.error); setMsg("✅ Account created! Please sign in."); setIsLogin(true); setE(signupEmail); setP(""); } catch(e:any) { setErr(e.message); } finally { setL(false); } }
+{pg==="home"&&<div style={{display:"flex",minHeight:"calc(100vh - 70px)"}}>
+<div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",padding:"60px 4%",background:"radial-gradient(ellipse at 30% 50%,rgba(255,215,0,0.04) 0%,transparent 60%)"}}>
+<div style={{maxWidth:540}}>
+<div style={{display:"inline-flex",padding:"6px 16px",background:"rgba(255,215,0,0.1)",border:"1px solid rgba(255,215,0,0.15)",borderRadius:100,fontSize:12,color:"#FFD700",marginBottom:24}}>✦ Premium Multi-Currency Platform</div>
+<h1 className="font-serif" style={{fontSize:56,fontWeight:700,lineHeight:"1.1",marginBottom:16}}>Your Global<br/><span className="text-g">Financial Command Center</span></h1>
+<p style={{fontSize:15,color:"#6b7280",lineHeight:"1.8",marginBottom:32}}>Manage 170+ currencies, exchange at live rates, send money globally, and track your portfolio — all from one premium platform.</p>
+<div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:32}}>
+{[{v:"170+",l:"Currencies"},{v:"10+",l:"Payment Methods"},{v:"100%",l:"Secure"},{v:"24/7",l:"Support"}].map(s=>(<div key={s.l} style={{padding:16,background:"rgba(255,255,255,0.03)",borderRadius:12,textAlign:"center"}}><div style={{fontSize:22,fontWeight:700}}><span className="text-g">{s.v}</span></div><div style={{fontSize:11,color:"#6b7280",marginTop:4}}>{s.l}</div></div>))}
+</div>
+<div style={{display:"flex",gap:16,fontSize:13}}>
+<span style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:"#22c55e"}}>✓</span> KYC Verified</span>
+<span style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:"#22c55e"}}>✓</span> Live Rates</span>
+<span style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:"#22c55e"}}>✓</span> Premium Security</span>
+</div></div></div>
+<div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",padding:"60px 4%"}}>
+<div style={{width:"100%",maxWidth:420}}>
+<div style={{display:"flex",marginBottom:24,gap:12}}>
+<button onClick={()=>{setLg(true);setEr("");setMsg("")}} style={{flex:1,padding:12,borderRadius:12,border:"none",background:lg?"linear-gradient(135deg,#FFD700,#C9A227)":"rgba(255,255,255,0.05)",color:lg?"#000":"#fff",fontSize:14,fontWeight:600,cursor:"pointer"}}>🔐 Sign In</button>
+<button onClick={()=>{setLg(false);setEr("");setMsg("")}} style={{flex:1,padding:12,borderRadius:12,border:"none",background:!lg?"linear-gradient(135deg,#FFD700,#C9A227)":"rgba(255,255,255,0.05)",color:!lg?"#000":"#fff",fontSize:14,fontWeight:600,cursor:"pointer"}}>✨ Register</button>
+</div>
+{er&&<div className="br">{er}</div>}{msg&&<div className="bg">{msg}</div>}
+{lg?(<form onSubmit={hL} style={{display:"flex",flexDirection:"column",gap:14}}>
+<input type="text" value={em} onChange={e=>setEm(e.target.value)} placeholder="Email or Username" style={IP} required/>
+<input type="password" value={pw} onChange={e=>setPw(e.target.value)} placeholder="Password" style={IP} required/>
+<button type="submit" disabled={ld} className="btn btn-p" style={{width:"100%",padding:14,fontSize:15}}>{ld?"...":"🔐 Sign In"}</button>
+</form>):(<form onSubmit={hR} style={{display:"flex",flexDirection:"column",gap:12}}>
+<input type="text" value={nm} onChange={e=>setNm(e.target.value)} placeholder="Full Name" style={IP} required/>
+<input type="text" value={us} onChange={e=>setUs(e.target.value)} placeholder="Username" style={IP} required/>
+<input type="email" value={se} onChange={e=>setSe(e.target.value)} placeholder="Email" style={IP} required/>
+<input type="tel" value={ph} onChange={e=>setPh(e.target.value)} placeholder="Phone Number" style={IP}/>
+<input type="text" value={cy} onChange={e=>setCy(e.target.value)} placeholder="Country" style={IP}/>
+<input type="password" value={pw} onChange={e=>setPw(e.target.value)} placeholder="Password" style={IP} required/>
+<button type="submit" disabled={ld} className="btn btn-p" style={{width:"100%",padding:14,fontSize:15}}>{ld?"...":"✨ Create Account"}</button>
+</form>)}
+</div></div></div>}
 
-  const nav = [{k:"home",l:"Home"},{k:"services",l:"Services"},{k:"earn",l:"Join & Earn"},{k:"about",l:"About Us"}];
+{pg==="features"&&<div style={{padding:"60px 4%",maxWidth:1000,margin:"0 auto",textAlign:"center"}}>
+<h2 className="font-serif" style={{fontSize:36,fontWeight:700,marginBottom:12}}>Premium <span className="text-g">Features</span></h2>
+<p className="muted" style={{fontSize:14,marginBottom:40}}>Everything you need to manage your wealth</p>
+<div className="g3">{[
+{i:"💱",t:"Multi-Currency",d:"10 wallets per user: USD, EUR, GBP, INR, AED, SAR, JPY, CNY, AUD, CAD. All with live exchange rates."},
+{i:"🔄",t:"Instant Exchange",d:"Swap between any currencies at live rates. No hidden fees, instant settlement."},
+{i:"📤",t:"Global Transfers",d:"Send money to any user instantly. Internal transfers with zero fees."},
+{i:"📥",t:"Deposit Methods",d:"Fund via UPI, Bank Transfer, PayPal, Stripe, or Crypto from external wallets."},
+{i:"📋",t:"KYC Verification",d:"Secure document upload and verification. Unlock full platform features."},
+{i:"🔐",t:"Premium Security",d:"Bank-grade encryption, role-based access, audit logging, and 24/7 monitoring."},
+].map(s=>(<div key={s.t} className="card" style={{padding:28,textAlign:"left"}}><div style={{fontSize:36,marginBottom:12}}>{s.i}</div><h3 style={{fontSize:16,fontWeight:600,marginBottom:8}}>{s.t}</h3><p className="muted" style={{fontSize:13,lineHeight:1.7}}>{s.d}</p></div>))}</div></div>}
 
-  return (
-    <div style={{minHeight:"100vh",background:"#0a0a0f",color:"#fff",fontFamily:"Inter,sans-serif"}}>
-      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 5%",borderBottom:"1px solid rgba(255,255,255,0.06)",backdropFilter:"blur(20px)",background:"rgba(10,10,15,0.8)",position:"sticky",top:0,zIndex:100}}>
-        <div className="row"><div style={{width:"36px",height:"36px",borderRadius:"10px",background:"linear-gradient(135deg,#d4af37,#b8942e)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"16px",fontWeight:"bold",color:"#000"}}>G</div><span className="font-display" style={{fontSize:"18px",fontWeight:"700"}}>Global Gemini <span className="text-gradient">Wallet</span></span></div>
-        <div className="row" style={{gap:"24px"}}>{nav.map(n=>(<button key={n.k} onClick={()=>setPage(n.k)} style={{fontSize:"14px",color:page===n.k?"#d4af37":"#9ca3af",background:"none",border:"none",cursor:"pointer",fontWeight:page===n.k?"600":"400"}}>{n.l}{page===n.k&&<div style={{position:"absolute",bottom:"-20px",left:"50%",transform:"translateX(-50%)",width:"20px",height:"2px",background:"#d4af37",borderRadius:"2px"}}/>}</button>))}</div>
-        <div className="row"><button onClick={()=>{setPage("home");setIsLogin(true)}} className="btn btn-secondary btn-sm">Sign In</button><button onClick={()=>{setPage("home");setIsLogin(false)}} className="btn btn-primary btn-sm">Get Started</button></div>
-      </div>
+{pg==="currencies"&&<div style={{padding:"60px 4%",maxWidth:800,margin:"0 auto",textAlign:"center"}}>
+<h2 className="font-serif" style={{fontSize:36,fontWeight:700,marginBottom:12}}>Supported <span className="text-g">Currencies</span></h2>
+<p className="muted" style={{fontSize:14,marginBottom:40}}>All major world currencies + cryptocurrencies</p>
+<div className="g-auto">{["USD","EUR","GBP","INR","AED","SAR","JPY","CNY","AUD","CAD","USDT","BTC","ETH","SOL","BNB"].map(c=>(
+<div key={c} className="card" style={{padding:20,textAlign:"center"}}><div style={{fontSize:18,fontWeight:700}}><span className="text-g">{c}</span></div></div>))}</div></div>}
 
-      {page==="home" && (
-        <div style={{display:"flex",minHeight:"calc(100vh - 70px)"}}>
-          <div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",padding:"80px 5%",background:"radial-gradient(ellipse at 30% 50%,rgba(212,175,55,0.05) 0%,transparent 60%)"}}>
-            <div style={{maxWidth:"520px"}}>
-              <div style={{display:"inline-flex",padding:"6px 16px",background:"rgba(212,175,55,0.1)",border:"1px solid rgba(212,175,55,0.15)",borderRadius:"100px",fontSize:"12px",color:"#d4af37",marginBottom:"24px"}}>✦ Multi-Currency Wealth Platform</div>
-              <h1 style={{fontSize:"56px",fontWeight:"800",fontFamily:"Georgia,serif",lineHeight:"1.1",marginBottom:"16px"}}>Your Global<br/><span className="text-gradient">Financial Hub</span></h1>
-              <p style={{fontSize:"16px",color:"#6b7280",lineHeight:"1.8",marginBottom:"32px"}}>Manage 170+ fiat currencies and major cryptocurrencies in one unified platform. Send money, track live prices, deposit via UPI, Bank, PayPal, or Crypto.</p>
-              <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:"12px",marginBottom:"32px"}}>
-                {[{v:"170+",l:"Fiat"},{v:"4",l:"Crypto"},{v:"5+",l:"Payments"},{v:"100%",l:"Secure"}].map(s=>(<div key={s.l} style={{padding:"16px",background:"rgba(255,255,255,0.03)",borderRadius:"10px",textAlign:"center"}}><div style={{fontSize:"22px",fontWeight:"700"}}><span className="text-gradient">{s.v}</span></div><div style={{fontSize:"11px",color:"#6b7280",marginTop:"4px"}}>{s.l}</div></div>))}
-              </div>
-              <div className="row" style={{gap:"24px",fontSize:"13px"}}><div className="row"><span style={{color:"#22c55e",fontSize:"16px"}}>✓</span> KYC</div><div className="row"><span style={{color:"#22c55e",fontSize:"16px"}}>✓</span> Live Rates</div><div className="row"><span style={{color:"#22c55e",fontSize:"16px"}}>✓</span> Referral Bonuses</div></div>
-            </div>
-          </div>
-          <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",padding:"60px 5%"}}>
-            <div style={{width:"100%",maxWidth:"400px"}}>
-              <div className="row" style={{marginBottom:"28px",gap:"12px"}}>
-                <button onClick={()=>{setIsLogin(true);setErr("");setMsg("")}} style={{flex:1,padding:"12px",borderRadius:"10px",border:"none",background:isLogin?"#d4af37":"rgba(255,255,255,0.05)",color:isLogin?"#000":"#fff",fontSize:"14px",fontWeight:"600",cursor:"pointer"}}>🔐 Sign In</button>
-                <button onClick={()=>{setIsLogin(false);setErr("");setMsg("")}} style={{flex:1,padding:"12px",borderRadius:"10px",border:"none",background:!isLogin?"#d4af37":"rgba(255,255,255,0.05)",color:!isLogin?"#000":"#fff",fontSize:"14px",fontWeight:"600",cursor:"pointer"}}>✨ Register</button>
-              </div>
-              {err&&<div style={{background:"rgba(239,68,68,0.1)",border:"1px solid rgba(239,68,68,0.15)",color:"#ef4444",fontSize:"13px",padding:"12px",borderRadius:"10px",marginBottom:"16px"}}>{err}</div>}
-              {msg&&<div style={{background:"rgba(34,197,94,0.1)",border:"1px solid rgba(34,197,94,0.15)",color:"#22c55e",fontSize:"13px",padding:"12px",borderRadius:"10px",marginBottom:"16px"}}>{msg}</div>}
-              {isLogin ? (
-                <form onSubmit={handleLogin} style={{display:"flex",flexDirection:"column",gap:"16px"}}>
-                  <input type="text" value={email} onChange={e=>setE(e.target.value)} placeholder="Email or Username" className="input" style={{padding:"14px 16px"}} required />
-                  <input type="password" value={pass} onChange={e=>setP(e.target.value)} placeholder="Password" className="input" style={{padding:"14px 16px"}} required />
-                  <button type="submit" disabled={load} className="btn btn-primary" style={{padding:"14px",fontSize:"15px",width:"100%"}}>{load?"Signing in...":"Sign In"}</button>
-                </form>
-              ) : (
-                <form onSubmit={handleSignup} style={{display:"flex",flexDirection:"column",gap:"14px"}}>
-                  <input type="text" value={name} onChange={e=>setN(e.target.value)} placeholder="Full Name" className="input" style={{padding:"14px 16px"}} required />
-                  <input type="text" value={user} onChange={e=>setUser(e.target.value)} placeholder="Username" className="input" style={{padding:"14px 16px"}} required />
-                  <input type="email" value={signupEmail} onChange={e=>setSE(e.target.value)} placeholder="Email" className="input" style={{padding:"14px 16px"}} required />
-                  <input type="password" value={pass} onChange={e=>setP(e.target.value)} placeholder="Password (min 6 chars)" className="input" style={{padding:"14px 16px"}} required />
-                  <input type="text" value={refer} onChange={e=>setRef(e.target.value)} placeholder="Referral code (optional)" className="input" style={{padding:"14px 16px"}} />
-                  <button type="submit" disabled={load} className="btn btn-primary" style={{padding:"14px",fontSize:"15px",width:"100%"}}>{load?"Creating...":"Create Free Account"}</button>
-                </form>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {page==="services" && (
-        <div style={{padding:"80px 5%",maxWidth:"1100px",margin:"0 auto"}}>
-          <div style={{textAlign:"center",marginBottom:"48px"}}><h2 className="font-display" style={{fontSize:"36px",fontWeight:"700",marginBottom:"12px"}}>Our <span className="text-gradient">Services</span></h2><p style={{color:"#6b7280",fontSize:"15px"}}>Comprehensive financial tools for the modern world</p></div>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"24px"}}>
-            {[{i:"💱",t:"Multi-Currency Wallet",d:"Hold and manage 170+ fiat currencies including USD, EUR, GBP, JPY, INR. Live exchange rates updated in real-time."},{i:"🪙",t:"Crypto Portfolio",d:"Support for Bitcoin, Ethereum, Solana, and USDT. Live market prices, instant conversion, secure storage."},{i:"📤",t:"P2P Transfers",d:"Send money instantly to any user by email or username. Support for fiat and cryptocurrency with zero fees."},{i:"📥",t:"Multiple Deposits",d:"Fund via UPI, Bank Transfer, PayPal, Stripe, or Crypto deposits. Multiple options for your convenience."},{i:"📤",t:"Withdrawals",d:"Withdraw to UPI, Bank Account, PayPal, or Crypto wallets. Admin-verified for maximum security."},{i:"🔗",t:"Referral Program",d:"Earn $10 per referral plus 0.8% of their wallet balance. Unlimited referrals with no caps on earnings."}].map(s=>(
-              <div key={s.t} className="card" style={{padding:"28px",transition:"all 0.3s"}} onMouseEnter={e=>e.currentTarget.style.transform="translateY(-2px)"} onMouseLeave={e=>e.currentTarget.style.transform="translateY(0)"}>
-                <div style={{fontSize:"36px",marginBottom:"12px"}}>{s.i}</div><h3 style={{fontSize:"16px",fontWeight:"600",marginBottom:"8px"}}>{s.t}</h3><p style={{fontSize:"13px",color:"#6b7280",lineHeight:"1.7"}}>{s.d}</p></div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {page==="earn" && (
-        <div style={{padding:"80px 5%",maxWidth:"900px",margin:"0 auto"}}>
-          <div style={{textAlign:"center",marginBottom:"48px"}}><h2 className="font-display" style={{fontSize:"36px",fontWeight:"700",marginBottom:"12px"}}>Join & <span className="text-gradient">Earn</span></h2><p style={{color:"#6b7280",fontSize:"15px"}}>Invite friends and earn passive income</p></div>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"32px"}}>
-            <div style={{background:"rgba(212,175,55,0.06)",border:"1px solid rgba(212,175,55,0.12)",borderRadius:"20px",padding:"40px",textAlign:"center"}}>
-              <div style={{fontSize:"48px",marginBottom:"16px"}}>💰</div><h3 style={{fontSize:"22px",fontWeight:"700",marginBottom:"8px"}}>$10 <span className="text-gradient">Per Referral</span></h3>
-              <p style={{color:"#6b7280",fontSize:"14px",lineHeight:"1.7",marginBottom:"16px"}}>Earn a flat <strong style={{color:"#d4af37"}}>$10 bonus</strong> for every new user who signs up using your referral link. No minimums, no caps.</p>
-              <div className="badge badge-green" style={{fontSize:"12px",padding:"6px 16px"}}>Paid instantly</div>
-            </div>
-            <div style={{background:"rgba(96,165,250,0.06)",border:"1px solid rgba(96,165,250,0.12)",borderRadius:"20px",padding:"40px",textAlign:"center"}}>
-              <div style={{fontSize:"48px",marginBottom:"16px"}}>📈</div><h3 style={{fontSize:"22px",fontWeight:"700",marginBottom:"8px"}}>0.8% <span className="text-gradient">Ongoing</span></h3>
-              <p style={{color:"#6b7280",fontSize:"14px",lineHeight:"1.7",marginBottom:"16px"}}>Earn <strong style={{color:"#60a5fa"}}>0.8% annually</strong> on the balance your referrals maintain in their wallet. Passive income that grows as they grow.</p>
-              <div className="badge badge-blue" style={{fontSize:"12px",padding:"6px 16px"}}>Paid monthly</div>
-            </div>
-          </div>
-          <div style={{marginTop:"32px",background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.06)",borderRadius:"16px",padding:"32px"}}>
-            <h3 style={{fontSize:"18px",fontWeight:"600",marginBottom:"16px"}}>How it works</h3>
-            <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"24px"}}>
-              {[{n:"1",t:"Share",d:"Share your unique referral code"},{n:"2",t:"Invite",d:"They sign up and verify"},{n:"3",t:"Earn",d:"You earn $10 + 0.8%"}].map(s=>(
-                <div key={s.n} style={{textAlign:"center"}}><div style={{width:"40px",height:"40px",borderRadius:"50%",background:"rgba(212,175,55,0.12)",color:"#d4af37",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"16px",fontWeight:"700",margin:"0 auto 12px"}}>{s.n}</div><h4 style={{fontSize:"14px",fontWeight:"600",marginBottom:"4px"}}>{s.t}</h4><p style={{fontSize:"12px",color:"#6b7280"}}>{s.d}</p></div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {page==="about" && (
-        <div style={{padding:"80px 5%",maxWidth:"900px",margin:"0 auto"}}>
-          <div style={{textAlign:"center",marginBottom:"48px"}}><h2 className="font-display" style={{fontSize:"36px",fontWeight:"700",marginBottom:"12px"}}>About <span className="text-gradient">Us</span></h2><p style={{color:"#6b7280",fontSize:"15px"}}>The future of multi-currency wealth management</p></div>
-          <div className="card" style={{padding:"40px",lineHeight:"1.9",color:"#9ca3af",fontSize:"14px",marginBottom:"32px"}}>
-            <p style={{marginBottom:"16px"}}>Global Gemini Wallet is a next-generation financial platform combining fiat currencies with cryptocurrencies in a single interface. We provide tools to manage, send, and grow wealth across 170+ currencies.</p>
-            <p>With KYC verification, encrypted authentication, and admin oversight, your funds and data remain secure at all times.</p>
-          </div>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:"16px"}}>
-            {[{v:"2025",l:"Founded"},{v:"170+",l:"Currencies"},{v:"5+",l:"Payments"},{v:"100%",l:"Secure"}].map(s=>(<div key={s.l} className="stat"><div className="stat-value"><span className="text-gradient">{s.v}</span></div><div className="stat-label">{s.l}</div></div>))}
-          </div>
-        </div>
-      )}
-      <div style={{borderTop:"1px solid rgba(255,255,255,0.06)",padding:"24px 5%",textAlign:"center",fontSize:"12px",color:"#4b5563"}}>© 2025 Global Gemini Wallet. All rights reserved.</div>
-    </div>
-  );
-}
+{pg==="about"&&<div style={{padding:"60px 4%",maxWidth:700,margin:"0 auto"}}>
+<h2 className="font-serif" style={{fontSize:36,fontWeight:700,marginBottom:20,textAlign:"center"}}>About <span className="text-g">Us</span></h2>
+<div className="card" style={{padding:32,lineHeight:1.9,color:"#9ca3af",fontSize:14}}>
+<p style={{marginBottom:16}}>Global Gemini Wallet is a premium multi-currency wealth management platform built for the modern world. We combine traditional fiat currencies with digital assets in one seamless, luxurious interface.</p>
+<p>With KYC verification, encrypted authentication, admin oversight, and full audit trails, your funds and data remain secure at all times.</p>
+</div>
+<div className="g4" style={{marginTop:24}}>{[{v:"2025",l:"Founded"},{v:"170+",l:"Currencies"},{v:"100%",l:"Secure"},{v:"24/7",l:"Support"}].map(s=>(<div key={s.l} className="st"><div className="st-v"><span className="text-g">{s.v}</span></div><div className="st-l">{s.l}</div></div>))}</div></div>}
+<div style={{borderTop:"1px solid rgba(255,255,255,0.05)",padding:"24px 4%",textAlign:"center",fontSize:12,color:"#4b5563"}}>© 2025 Global Gemini Wallet. All rights reserved.</div>
+</div>)}

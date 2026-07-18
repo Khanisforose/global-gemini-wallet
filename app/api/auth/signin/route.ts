@@ -1,12 +1,2 @@
-import { NextResponse } from "next/server"; import { prisma } from "@/lib/db"; import { verifyPassword, signToken, setCookie } from "@/lib/auth";
-export async function POST(req: Request) {
-  try {
-    const { email, password } = await req.json();
-    const user = await prisma.user.findFirst({ where: { OR: [{ email }, { username: email }] } });
-    if (!user || !(await verifyPassword(password, user.password))) return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
-    const token = signToken({ userId: user.id, email: user.email, role: user.role });
-    const res = NextResponse.json({ user: { id: user.id, email: user.email, name: user.name, role: user.role, username: user.username } });
-    res.cookies.set(setCookie(token));
-    return res;
-  } catch { return NextResponse.json({ error: "Error" }, { status: 500 }); }
-}
+import{NextResponse}from"next/server";import{prisma}from"@/lib/db";import{verifyPassword,signToken,setCookie}from"@/lib/auth";
+export async function POST(req:Request){try{const{email,password}=await req.json();const user=await prisma.user.findFirst({where:{OR:[{email},{username:email}]}});if(!user||!(await verifyPassword(password,user.password)))return NextResponse.json({error:"Invalid credentials"},{status:401});if(user.status==="DISABLED")return NextResponse.json({error:"Account disabled"},{status:403});const token=signToken({userId:user.id,email:user.email,role:user.role});const res=NextResponse.json({user:{id:user.id,email:user.email,name:user.name,role:user.role,username:user.username}});res.cookies.set(setCookie(token));return res}catch{return NextResponse.json({error:"Error"},{status:500})}

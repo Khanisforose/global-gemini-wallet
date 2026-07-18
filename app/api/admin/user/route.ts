@@ -1,13 +1,3 @@
-import { NextResponse } from "next/server"; import { prisma } from "@/lib/db"; import { requireAdmin } from "@/lib/auth";
-export async function DELETE(req: Request) {
-  try { const a = await requireAdmin(); const { userId } = await req.json();
-    await prisma.user.delete({ where: { id: userId } });
-    return NextResponse.json({ success: true });
-  } catch (e: any) { return NextResponse.json({ error: e.message }, { status: 500 }); }
-}
-export async function PATCH(req: Request) {
-  try { const a = await requireAdmin(); const { userId, status } = await req.json();
-    await prisma.user.update({ where: { id: userId }, data: { kycStatus: status } });
-    return NextResponse.json({ success: true });
-  } catch (e: any) { return NextResponse.json({ error: e.message }, { status: 500 }); }
-}
+import{NextResponse}from"next/server";import{prisma}from"@/lib/db";import{requireAdmin}from"@/lib/auth";
+export async function DELETE(req:Request){try{await requireAdmin();const{userId}=await req.json();await prisma.user.delete({where:{id:userId}});return NextResponse.json({success:true})}catch(e:any){return NextResponse.json({error:e.message},{status:500})}
+export async function PATCH(req:Request){try{const admin=await requireAdmin();const{userId,action}=await req.json();if(action==="FREEZE")await prisma.user.update({where:{id:userId},data:{status:"FROZEN"}});else if(action==="UNFREEZE")await prisma.user.update({where:{id:userId},data:{status:"ACTIVE"}});else if(action==="DISABLE")await prisma.user.update({where:{id:userId},data:{status:"DISABLED"}});else if(action==="ENABLE")await prisma.user.update({where:{id:userId},data:{status:"ACTIVE"}});return NextResponse.json({success:true})}catch(e:any){return NextResponse.json({error:e.message},{status:500})}

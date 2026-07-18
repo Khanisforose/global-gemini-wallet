@@ -1,46 +1,11 @@
-import jwt from "jsonwebtoken";
-import bcrypt from "bcryptjs";
-import { cookies } from "next/headers";
-
-const S = process.env.JWT_SECRET || "dev-secret";
-const N = "gg_token";
-
-export const hashPassword = (p: string) => bcrypt.hash(p, 12);
-export const verifyPassword = (p: string, h: string) => bcrypt.compare(p, h);
-export const signToken = (p: any) => jwt.sign(p, S, { expiresIn: "7d" });
-export const verifyToken = (t: string): any | null => {
-  try { return jwt.verify(t, S); } catch { return null; }
-};
-export const getSession = async () => {
-  const cookieStore = await cookies();
-  const t = cookieStore.get(N)?.value;
-  return t ? verifyToken(t) : null;
-};
-export const requireAuth = async () => {
-  const s = await getSession();
-  if (!s) throw new Error("Unauthorized");
-  return s;
-};
-export const requireAdmin = async () => {
-  const s = await requireAuth();
-  if (s.role !== "ADMIN") throw new Error("Forbidden");
-  return s;
-};
-export const setCookie = (token: string) => ({
-  name: N,
-  value: token,
-  httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: "lax" as const,
-  maxAge: 604800,
-  path: "/",
-});
-export const clearCookie = () => ({
-  name: N,
-  value: "",
-  httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: "lax" as const,
-  maxAge: 0,
-  path: "/",
-});
+import jwt from "jsonwebtoken";import bcrypt from "bcryptjs";import{cookies}from"next/headers";
+const S=process.env.JWT_SECRET||"dev-secret";const N="gg_token";
+export const hashPassword=(p:string)=>bcrypt.hash(p,12);
+export const verifyPassword=(p:string,h:string)=>bcrypt.compare(p,h);
+export const signToken=(p:any)=>jwt.sign(p,S,{expiresIn:"7d"});
+export const verifyToken=(t:string):any|null=>{try{return jwt.verify(t,S)}catch{return null}};
+export const getSession=async()=>{const t=(await cookies()).get(N)?.value;return t?verifyToken(t):null};
+export const requireAuth=async()=>{const s=await getSession();if(!s)throw new Error("Unauthorized");return s};
+export const requireAdmin=async()=>{const s=await requireAuth();if(s.role!=="ADMIN")throw new Error("Forbidden");return s};
+export const setCookie=(token:string)=>({name:N,value:token,httpOnly:true,secure:process.env.NODE_ENV==="production",sameSite:"lax"as const,maxAge:604800,path:"/"});
+export const clearCookie=()=>({name:N,value:"",httpOnly:true,secure:process.env.NODE_ENV==="production",sameSite:"lax"as const,maxAge:0,path:"/"});
