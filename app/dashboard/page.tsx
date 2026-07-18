@@ -43,13 +43,13 @@ export default function Dashboard() {
                 <p style={{fontSize:"36px",fontWeight:"700",marginTop:"4px"}}><span className="text-gradient">{fmt(total)}</span> <span className="text-muted" style={{fontSize:"14px",fontWeight:"400"}}>total value</span></p>
               </div>
               <div className="row-wrap">
-                {kyc==="VERIFIED" ? (<><Link href="/wallet/deposit" className="btn btn-primary">📥 Deposit</Link><Link href="/wallet/withdraw" className="btn btn-secondary">📤 Withdraw</Link></>) : (<Link href="/kyc" className="btn btn-primary">📋 Complete KYC</Link>)}
+                <><Link href="/wallet/deposit" className="btn btn-primary">📥 Deposit</Link><Link href="/wallet/withdraw" className="btn btn-secondary">📤 Withdraw</Link><Link href="/wallet/swap" className="btn btn-secondary">🔄 Swap</Link><Link href="/kyc" className="btn btn-secondary btn-sm">📋 KYC</Link></>
               </div>
             </div>
             <div className="grid-2" style={{marginBottom:"24px"}}>
               <div className="card" style={{padding:"24px"}}>
-                <h3 className="font-display" style={{fontSize:"16px",fontWeight:"600",marginBottom:"16px"}}>💵 Fiat</h3>
-                {fiat.length===0 ? <p className="text-muted text-sm">No balance</p> : fiat.map((b:any)=>(
+                <h3 className="font-display" style={{fontSize:"16px",fontWeight:"600",marginBottom:"16px"}}>💵 Fiat <span className="text-muted" style={{fontSize:"12px",fontWeight:"400"}}>All currencies</span></h3>
+                {fiat.length===0 ? <div><p className="text-muted text-sm">No balance yet</p><p className="text-xs text-muted" style={{marginTop:"8px"}}>Ask admin to credit your account</p></div> : fiat.map((b:any)=>(
                   <div key={b.currency} className="row-between" style={{padding:"10px 0",borderBottom:"1px solid rgba(255,255,255,0.04)"}}>
                     <div><span style={{fontWeight:"500"}}>{b.currency}</span><span style={{marginLeft:"8px",fontFamily:"Georgia,serif"}}>{b.amount.toLocaleString("en-US",{minimumFractionDigits:2})}</span></div>
                     <span className="text-gradient" style={{fontWeight:"500"}}>{fmt(b.usdValue)}</span>
