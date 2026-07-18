@@ -13,7 +13,7 @@ export async function POST(req: Request) {
     });
     if (!user?.wallet) return NextResponse.json({ error: "Wallet not found" }, { status: 404 });
     
-    const fromBal = user.wallet.balances.find(b => b.currency === from);
+    const fromBal = user.wallet.balances.find((b:any)=>b.currency === from);
     if (!fromBal || Number(fromBal.amount) < amount) return NextResponse.json({ error: "Insufficient balance" }, { status: 400 });
     
     // Get crypto prices for conversion
