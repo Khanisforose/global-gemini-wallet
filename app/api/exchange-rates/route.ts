@@ -1,2 +1,2 @@
 import{NextResponse}from"next/server";import{prisma}from"@/lib/db";
-export async function GET(){try{const rates=await prisma.exchangeRate.findMany({where:{from:"USD"},orderBy:{to:"asc"}});return NextResponse.json({rates:rates.map(r=>({currency:r.to,rate:Number(r.rate)}))})}catch{return NextResponse.json({error:"Error"},{status:500})}}
+export async function GET(){try{const rates=await prisma.exchangeRate.findMany({where:{from:"USD"},orderBy:{to:"asc"}});return NextResponse.json({rates:rates.map((r:any)=>({currency:r.to,rate:Number(r.rate)}))})}catch{return NextResponse.json({error:"Error"},{status:500})}}
