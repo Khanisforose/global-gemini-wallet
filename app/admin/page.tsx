@@ -1,63 +1,60 @@
 "use client"; import { useState, useEffect } from "react"; import Link from "next/link";
 export default function AdminPage() {
   const [users, setU] = useState<any[]>([]); const [email, setE] = useState(""); const [curr, setC] = useState("USD"); const [amt, setA] = useState(""); const [msg, setMsg] = useState(""); const [err, setErr] = useState("");
+  const CURRENCIES = ["USD","EUR","GBP","JPY","CHF","CAD","AUD","CNY","INR","BRL","MXN","USDT","BTC","ETH","SOL"];
   useEffect(() => { fetch("/api/auth/me").then(r=>r.json()).then(d => { if (d.role!=="ADMIN") { window.location.href="/"; return; } fetch("/api/admin/users").then(r=>r.json()).then(d=>setU(d.users||[])); }); }, []);
-  const fund = async(e:any) => { e.preventDefault(); setMsg(""); setErr(""); try { const r=await fetch("/api/admin/fund",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email,currency:curr,amount:parseFloat(amt)})}); const d=await r.json(); if(!r.ok) throw new Error(d.error); setMsg(`✅ Credited ${amt} ${curr} to ${email}`); setA(""); } catch(e:any) { setErr(e.message); } };
-  const del = async(id:string) => { if(!confirm("Delete user?")) return; await fetch("/api/admin/user",{method:"DELETE",headers:{"Content-Type":"application/json"},body:JSON.stringify({userId:id})}); setU(u=>u.filter((x:any)=>x.id!==id)); };
-  const CURRENCIES = ["USD","EUR","GBP","JPY","CHF","CAD","AUD","CNY","INR","BRL","MXN","SGD","NZD","KRW","SEK","TRY","AED"];
-  const BGCARD = "rgba(255,255,255,0.03)"; const BORDER = "1px solid rgba(255,255,255,0.06)"; const INP = {width:"100%",padding:"12px 14px",background:"#1a1a2e",border:BORDER,borderRadius:"10px",color:"#fff",fontSize:"14px",outline:"none"};
+  const fund = async(e:any) => { e.preventDefault(); setMsg(""); setErr(""); try { const r=await fetch("/api/admin/fund",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email,currency:curr,amount:parseFloat(amt)})}); const d=await r.json(); if(!r.ok) throw new Error(d.error); setMsg(`✅ Deposited ${amt} ${curr} to ${email}`); setA(""); } catch(e:any) { setErr(e.message); } };
+  const del = async(id:string) => { if(!confirm("Delete?")) return; await fetch("/api/admin/user",{method:"DELETE",headers:{"Content-Type":"application/json"},body:JSON.stringify({userId:id})}); setU(u=>u.filter((x:any)=>x.id!==id)); };
   return (
-    <div style={{minHeight:"100vh",background:"#0a0a0f",color:"#fff",fontFamily:"Inter,sans-serif"}}>
-      <div style={{borderBottom:BORDER,padding:"14px 32px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-        <span style={{fontFamily:"Georgia,serif",fontSize:"18px",fontWeight:"600"}}>Global Gemini <span style={{background:"linear-gradient(135deg,#d4af37,#f0d060)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>Wallet</span> <span style={{fontSize:"10px",background:"rgba(212,175,55,0.12)",color:"#d4af37",padding:"2px 8px",borderRadius:"100px",marginLeft:"6px"}}>ADMIN</span></span>
-        <button onClick={async()=>{await fetch("/api/auth/signout",{method:"POST"});window.location.href="/";}} style={{fontSize:"13px",color:"#6b7280",background:"none",border:"none",cursor:"pointer"}}>Sign Out</button>
-      </div>
-      <div style={{maxWidth:"1400px",margin:"0 auto",padding:"24px 32px"}}>
-        <h1 style={{fontSize:"26px",fontWeight:"bold",fontFamily:"Georgia,serif",marginBottom:"20px",background:"linear-gradient(135deg,#d4af37,#f0d060)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>⚡ Admin Panel</h1>
-        <div style={{display:"flex",gap:"8px",marginBottom:"24px",flexWrap:"wrap"}}>
-          {[{l:"💫 Credit Users",p:"/admin"},{l:"📋 KYC Queue",p:"/admin/kyc"},{l:"📥 Deposits",p:"/admin/deposits"},{l:"📤 Withdrawals",p:"/admin/withdrawals"}].map(x=>(
-            <Link key={x.p} href={x.p} style={{padding:"10px 20px",background:x.p==="/admin"?"linear-gradient(135deg,#d4af37,#b8942e)":"rgba(255,255,255,0.04)",color:x.p==="/admin"?"#000":"#e5e7eb",fontWeight:"600",fontSize:"13px",borderRadius:"10px",textDecoration:"none",border:x.p==="/admin"?"none":"1px solid rgba(255,255,255,0.08)"}}>{x.l}</Link>
-          ))}
+    <div className="app">
+      <header className="header"><div className="header-inner">
+        <span className="font-display" style={{fontSize:"18px",fontWeight:"700"}}>🌍 Global Gemini <span className="text-gradient">Wallet</span> <span className="badge badge-gold" style={{marginLeft:"8px"}}>ADMIN</span></span>
+        <div className="row">
+          <Link href="/admin" className="tab active" style={{fontSize:"13px"}}>💫 Dashboard</Link>
+          <Link href="/admin/kyc" className="tab" style={{fontSize:"13px"}}>📋 KYC</Link>
+          <Link href="/admin/deposits" className="tab" style={{fontSize:"13px"}}>📥 Deposits</Link>
+          <Link href="/admin/withdrawals" className="tab" style={{fontSize:"13px"}}>📤 Withdrawals</Link>
+          <button onClick={async()=>{await fetch("/api/auth/signout",{method:"POST"});window.location.href="/";}} className="btn btn-secondary btn-sm">Sign Out</button>
         </div>
-        {/* Stats */}
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:"12px",marginBottom:"24px"}}>
-          {[{l:"Total Users",v:users.length,c:"#60a5fa"},{l:"KYC Pending",v:users.filter((u:any)=>u.kycStatus==="PENDING").length,c:"#facc15"},{l:"Verified",v:users.filter((u:any)=>u.kycStatus==="VERIFIED").length,c:"#22c55e"},{l:"Regular",v:users.filter((u:any)=>u.role==="USER").length,c:"#a78bfa"}].map(s=>(
-            <div key={s.l} style={{background:BGCARD,backdropFilter:"blur(24px)",border:BORDER,borderRadius:"12px",padding:"16px",textAlign:"center"}}><div style={{fontSize:"24px",fontWeight:"bold",color:s.c}}>{s.v}</div><div style={{fontSize:"11px",color:"#6b7280",marginTop:"4px"}}>{s.l}</div></div>
-          ))}
-        </div>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 2fr",gap:"20px"}}>
-          {/* Credit Form */}
-          <div style={{background:BGCARD,backdropFilter:"blur(24px)",border:BORDER,borderRadius:"16px",padding:"24px"}}>
-            <h2 style={{fontSize:"16px",fontWeight:"600",fontFamily:"Georgia,serif",marginBottom:"16px"}}>💫 Credit User</h2>
-            {msg&&<div style={{background:"rgba(34,197,94,0.1)",border:"1px solid rgba(34,197,94,0.15)",color:"#22c55e",fontSize:"12px",padding:"10px",borderRadius:"8px",marginBottom:"12px"}}>{msg}</div>}
-            {err&&<div style={{background:"rgba(239,68,68,0.1)",border:"1px solid rgba(239,68,68,0.15)",color:"#ef4444",fontSize:"12px",padding:"10px",borderRadius:"8px",marginBottom:"12px"}}>{err}</div>}
-            <form onSubmit={fund} style={{display:"flex",flexDirection:"column",gap:"12px"}}>
-              <select value={email} onChange={e=>setE(e.target.value)} style={INP} required><option value="">Select user...</option>{users.filter((u:any)=>u.role!=="ADMIN").map((u:any)=><option key={u.id} value={u.email}>{u.name} ({u.email})</option>)}</select>
-              <div style={{display:"flex",gap:"8px"}}>
-                <select value={curr} onChange={e=>setC(e.target.value)} style={{...INP,width:"100px"}}>{CURRENCIES.map(c=><option key={c} value={c}>{c}</option>)}</select>
-                <input type="number" step="0.01" min="0.01" value={amt} onChange={e=>setA(e.target.value)} placeholder="Amount" style={{...INP,flex:1}} required />
-              </div>
-              <button type="submit" style={{width:"100%",padding:"12px",background:"linear-gradient(135deg,#d4af37,#b8942e)",color:"#000",fontWeight:"600",fontSize:"14px",border:"none",borderRadius:"10px",cursor:"pointer"}}>💫 Credit Now</button>
-            </form>
+      </div></header>
+      <main className="main">
+        <div className="fade-in">
+          <h1 className="font-display" style={{fontSize:"28px",fontWeight:"700",marginBottom:"24px"}}><span className="text-gradient">⚡ Admin Panel</span></h1>
+          <div className="grid-4" style={{marginBottom:"24px"}}>
+            <div className="stat"><div className="stat-value" style={{color:"#60a5fa"}}>{users.length}</div><div className="stat-label">Users</div></div>
+            <div className="stat"><div className="stat-value" style={{color:"#facc15"}}>{users.filter((u:any)=>u.kycStatus==="PENDING").length}</div><div className="stat-label">KYC Pending</div></div>
+            <div className="stat"><div className="stat-value" style={{color:"#22c55e"}}>{users.filter((u:any)=>u.kycStatus==="VERIFIED").length}</div><div className="stat-label">Verified</div></div>
+            <div className="stat"><div className="stat-value" style={{color:"#a78bfa"}}>{users.filter((u:any)=>u.role==="USER").length}</div><div className="stat-label">Active</div></div>
           </div>
-          {/* Users Table */}
-          <div style={{background:BGCARD,backdropFilter:"blur(24px)",border:BORDER,borderRadius:"16px",padding:"20px"}}>
-            <h2 style={{fontSize:"16px",fontWeight:"600",fontFamily:"Georgia,serif",marginBottom:"12px"}}>👥 Users</h2>
-            <div style={{overflowX:"auto"}}>
-              <table style={{width:"100%",borderCollapse:"collapse",fontSize:"13px"}}>
-                <thead><tr style={{color:"#6b7280",borderBottom:BORDER}}><th style={{textAlign:"left",padding:"8px"}}>Name</th><th style={{textAlign:"left",padding:"8px"}}>Email</th><th style={{textAlign:"center",padding:"8px"}}>KYC</th><th style={{textAlign:"center",padding:"8px"}}>Role</th><th style={{textAlign:"center",padding:"8px"}}>Action</th></tr></thead>
-                <tbody>{users.map((u:any)=>(
-                  <tr key={u.id} style={{borderBottom:BORDER}}><td style={{padding:"8px"}}>{u.name}</td><td style={{padding:"8px",color:"#9ca3af"}}>{u.email}</td>
-                    <td style={{padding:"8px",textAlign:"center"}}><span style={{fontSize:"11px",padding:"2px 8px",borderRadius:"100px",background:u.kycStatus==="VERIFIED"?"rgba(34,197,94,0.15)":u.kycStatus==="PENDING"?"rgba(250,204,21,0.15)":"rgba(107,114,128,0.15)",color:u.kycStatus==="VERIFIED"?"#22c55e":u.kycStatus==="PENDING"?"#facc15":"#6b7280"}}>{u.kycStatus}</span></td>
-                    <td style={{padding:"8px",textAlign:"center",color:"#6b7280"}}>{u.role}</td>
-                    <td style={{padding:"8px",textAlign:"center"}}><button onClick={()=>del(u.id)} style={{fontSize:"11px",padding:"4px 12px",background:"rgba(239,68,68,0.12)",color:"#ef4444",border:"1px solid rgba(239,68,68,0.2)",borderRadius:"6px",cursor:"pointer"}}>Delete</button></td>
-                  </tr>
-                ))}</tbody>
-              </table>
+          <div className="grid-2" style={{gap:"24px"}}>
+            <div className="card" style={{padding:"24px"}}>
+              <h3 className="font-display" style={{fontSize:"16px",fontWeight:"600",marginBottom:"16px"}}>💫 Deposit to User</h3>
+              {msg&&<div className="badge badge-green" style={{marginBottom:"12px",padding:"10px",borderRadius:"8px",display:"block"}}>{msg}</div>}
+              {err&&<div className="badge badge-red" style={{marginBottom:"12px",padding:"10px",borderRadius:"8px",display:"block"}}>{err}</div>}
+              <form onSubmit={fund} style={{display:"flex",flexDirection:"column",gap:"12px"}}>
+                <select value={email} onChange={e=>setE(e.target.value)} className="input" required><option value="">Select user...</option>{users.filter((u:any)=>u.role!=="ADMIN").map((u:any)=><option key={u.id} value={u.email}>{u.name} ({u.email})</option>)}</select>
+                <div className="row" style={{gap:"8px"}}>
+                  <select value={curr} onChange={e=>setC(e.target.value)} className="input" style={{width:"100px"}}>{CURRENCIES.map(c=><option key={c} value={c}>{c}</option>)}</select>
+                  <input type="number" step="0.01" min="0.01" value={amt} onChange={e=>setA(e.target.value)} placeholder="Amount" className="input" style={{flex:1}} required />
+                </div>
+                <button type="submit" className="btn btn-primary" style={{width:"100%"}}>💫 Deposit</button>
+              </form>
+            </div>
+            <div className="card" style={{padding:"24px"}}>
+              <h3 className="font-display" style={{fontSize:"16px",fontWeight:"600",marginBottom:"16px"}}>👥 Users ({users.length})</h3>
+              <div style={{maxHeight:"400px",overflowY:"auto"}}>{users.map((u:any)=>(
+                <div key={u.id} className="row-between" style={{padding:"8px 0",borderBottom:"1px solid rgba(255,255,255,0.04)"}}>
+                  <div><span style={{fontSize:"14px",fontWeight:"500"}}>{u.name}</span><span className="text-muted text-xs" style={{marginLeft:"6px"}}>{u.email}</span></div>
+                  <div className="row" style={{gap:"6px"}}>
+                    <span className={`badge ${u.kycStatus==="VERIFIED"?"badge-green":u.kycStatus==="PENDING"?"badge-blue":"badge-red"}`}>{u.kycStatus}</span>
+                    <button onClick={()=>del(u.id)} className="btn btn-danger btn-sm" style={{padding:"4px 8px",fontSize:"10px"}}>Delete</button>
+                  </div>
+                </div>
+              ))}</div>
             </div>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

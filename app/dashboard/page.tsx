@@ -5,22 +5,27 @@ export default function Dashboard() {
   const [txs, setTxs] = useState<any[]>([]); const [kyc, setK] = useState("UNVERIFIED");
   const [to, setTo] = useState(""); const [sendAmt, setSA] = useState(""); const [sendCurr, setSC] = useState("USD"); const [sendMsg, setSM] = useState(""); const [sendErr, setSE] = useState("");
   const [curPw, setCP] = useState(""); const [newPw, setNP] = useState(""); const [pwMsg, setPM] = useState("");
-  const [displayCurr,setDC]=useState("USD");const [rates,setRates]=useState({} as Record<string,number>); const [refCode] = useState("GEM" + Math.random().toString(36).slice(2,8).toUpperCase());
+  const [displayCurr, setDC] = useState("USD"); const [refCode] = useState("GEM" + Math.random().toString(36).slice(2,8).toUpperCase());
   const coinColors: Record<string,string> = { BTC:"#f7931a", ETH:"#627eea", SOL:"#9945ff", USDT:"#26a17b" };
   const txColors: Record<string,string> = { TRANSFER:"#a78bfa", ADMIN_FUNDING:"#22c55e", DEPOSIT:"#22c55e" };
   const txLabels: Record<string,string> = { TRANSFER:"Sent", ADMIN_FUNDING:"Deposited", DEPOSIT:"Received" };
+  const SYM: Record<string,string> = { USD:"$",EUR:"€",GBP:"£",JPY:"¥",CHF:"CHF",CAD:"C$",AUD:"A$",CNY:"¥",INR:"₹",BRL:"R$",KRW:"₩",SGD:"S$",NZD:"NZ$",SEK:"kr",TRY:"₺",AED:"د.إ",SAR:"﷼",HKD:"HK$",THB:"฿",ZAR:"R",PLN:"zł",NGN:"₦",EGP:"£",KES:"KSh",COP:"$",ARS:"$",UAH:"₴",PKR:"₨",BDT:"৳",OMR:"﷼",KWD:"د.ك" };
+  const ALL_CURRENCIES = ["USD","EUR","GBP","JPY","CHF","CAD","AUD","CNY","INR","BRL","MXN","SGD","KRW","SEK","TRY","AED","SAR","HKD","THB","ZAR","PLN","NGN","EGP","KES","COP","ARS","UAH","PKR","BDT","OMR","KWD"];
+  const [rates, setRates] = useState<Record<string,number>>({});
 
   useEffect(() => {
     fetch("/api/auth/me").then(r=>r.json()).then(d => { if (!d.id) { window.location.href="/"; return; } setU(d); setK(d.kycStatus||"UNVERIFIED"); });
     fetch("/api/balances").then(r=>r.json()).then(d => { setF(d.balances||[]); setC(d.crypto||[]); setTot(d.totalUSD||0); });
-    fetch("/api/transactions").then(r=>r.json()).then(d => setTxs(d.transactions||[])); fetch("/api/exchange-rates").then(r=>r.json()).then(d=>{const m:any={};(d.rates||[]).forEach((r:any)=>m[r.currency]=r.rate);setRates(m as Record<string,number>)}).catch(()=>{});
+    fetch("/api/transactions").then(r=>r.json()).then(d => setTxs(d.transactions||[]));
+    fetch("/api/exchange-rates").then(r=>r.json()).then(d => { const m:Record<string,number>={}; (d.rates||[]).forEach((r:any)=>m[r.currency]=r.rate); setRates(m); }).catch(()=>{});
   }, []);
 
   const sendFunds = async(e:any) => { e.preventDefault(); setSM(""); setSE(""); try { const r=await fetch("/api/transfer",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({to,currency:sendCurr,amount:parseFloat(sendAmt)})}); const d=await r.json(); if(!r.ok) throw new Error(d.error); setSM(`✅ Sent ${sendAmt} ${sendCurr}`); setSA(""); setTo(""); } catch(e:any) { setSE(e.message); } };
-  const changePw = async(e:any) => { e.preventDefault(); setPM(""); try { const r=await fetch("/api/auth/password",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({currentPassword:curPw,newPassword:newPw})}); const d=await r.json(); if(!r.ok) throw new Error(d.error); setPM("✅ Password changed!"); setCP(""); setNP(""); } catch(e:any) { setPM("Error: "+e.message); } };
+  const changePw = async(e:any) => { e.preventDefault(); setPM(""); try { const r=await fetch("/api/auth/password",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({currentPassword:curPw,newPassword:newPw})}); const d=await r.json(); if(!r.ok) throw new Error(d.error); setPM("✅ Password changed!"); setCP(""); setNP(""); } catch(e:any) { setPM(e.message); } };
 
   if (!user) return <div className="app"><div className="loading"/></div>;
-  const fmt = (n:number) => "$"+n.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}); const fmt2=(n:number,c?:string)=>{const sym:any={"USD":"$","EUR":"€","GBP":"£","JPY":"¥","CHF":"CHF","CAD":"C$","AUD":"A$","CNY":"¥","INR":"₹","BRL":"R$","KRW":"₩","SGD":"S$","NZD":"NZ$","SEK":"kr","TRY":"₺","AED":"د.إ","SAR":"﷼"};const cu=c||displayCurr;const r=rates[cu]||1;const v=cu==="USD"?n:n/r;return (sym[cu]||cu)+" "+v.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})};
+  const fmt = (n:number) => "$"+n.toLocaleString("en-US",{minimumFractionDigits:2});
+  const fmt2 = (n:number) => { const cu=displayCurr; const r=rates[cu]||1; const v=cu==="USD"?n:n/r; return (SYM[cu]||cu)+" "+v.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}) };
 
   return (
     <div className="app">
@@ -31,7 +36,7 @@ export default function Dashboard() {
             {[{k:"wallet",l:"💰 Wallet"},{k:"profile",l:"👤 Profile"},{k:"refer",l:"🔗 Refer"},{k:"settings",l:"⚙️ Settings"}].map(t=>(
               <button key={t.k} onClick={()=>setT(t.k)} className={`tab ${tab===t.k?"active":""}`}>{t.l}</button>
             ))}
-            <button onClick={async()=>{await fetch("/api/auth/signout",{method:"POST"});window.location.href="/";}} className="btn btn-secondary btn-sm hide-mobile" style={{marginLeft:"8px"}}>Sign Out</button>
+            <button onClick={async()=>{await fetch("/api/auth/signout",{method:"POST"});window.location.href="/";}} className="btn btn-secondary btn-sm" style={{marginLeft:"8px"}}>Sign Out</button>
           </div>
         </div>
       </header>
@@ -40,30 +45,39 @@ export default function Dashboard() {
           <div className="fade-in">
             <div className="row-between" style={{marginBottom:"24px",flexWrap:"wrap",gap:"12px"}}>
               <div><h1 className="font-display" style={{fontSize:"28px",fontWeight:"700"}}>Welcome, {user.name}</h1>
-                <div className="row" style={{marginTop:"4px",gap:"8px",flexWrap:"wrap"}}><p style={{fontSize:"36px",fontWeight:"700"}}><span className="text-gradient">{fmt2(total,displayCurr)}</span></p><select value={displayCurr} onChange={e=>setDC(e.target.value)} style={{padding:"4px 8px",background:"#151525",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"6px",color:"#d4af37",fontSize:"13px",fontWeight:"600",outline:"none",cursor:"pointer"}}>{["USD","EUR","GBP","JPY","CHF","CAD","AUD","CNY","INR","BRL","MXN","SGD","KRW","SEK","TRY","AED","SAR","HKD","THB","ZAR","PLN","NGN","EGP","KES","COP","ARS","UAH","PKR","BDT","OMR","KWD"].map(c=><option key={c} value={c}>{c}</option>)}</select><span className="text-muted" style={{fontSize:"14px",fontWeight:"400"}}>total</span></div>
+                <div className="row" style={{marginTop:"8px",gap:"8px",flexWrap:"wrap"}}>
+                  <p style={{fontSize:"36px",fontWeight:"700"}}><span className="text-gradient">{fmt2(total)}</span></p>
+                  <select value={displayCurr} onChange={e=>setDC(e.target.value)} style={{padding:"4px 8px",background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"6px",color:"#d4af37",fontSize:"13px",fontWeight:"600",outline:"none",cursor:"pointer"}}>
+                    {ALL_CURRENCIES.map(c=><option key={c} value={c}>{c}</option>)}
+                  </select>
+                  <span className="text-muted" style={{fontSize:"14px"}}>total</span>
+                </div>
               </div>
               <div className="row-wrap">
-                <><Link href="/wallet/deposit" className="btn btn-primary">📥 Deposit</Link><Link href="/wallet/withdraw" className="btn btn-secondary">📤 Withdraw</Link><Link href="/wallet/swap" className="btn btn-secondary">🔄 Swap</Link><Link href="/kyc" className="btn btn-secondary btn-sm">📋 KYC</Link></>
+                <Link href="/wallet/deposit" className="btn btn-primary">📥 Deposit</Link>
+                <Link href="/wallet/withdraw" className="btn btn-secondary">📤 Withdraw</Link>
+                <Link href="/wallet/swap" className="btn btn-secondary">🔄 Swap</Link>
+                <Link href="/kyc" className="btn btn-secondary btn-sm">📋 KYC</Link>
               </div>
             </div>
             <div className="grid-2" style={{marginBottom:"24px"}}>
               <div className="card" style={{padding:"24px"}}>
-                <h3 className="font-display" style={{fontSize:"16px",fontWeight:"600",marginBottom:"16px"}}>💵 Fiat <span className="text-muted" style={{fontSize:"12px",fontWeight:"400"}}>All currencies</span></h3>
-                {fiat.length===0 ? <div><p className="text-muted text-sm">No balance yet</p><p className="text-xs text-muted" style={{marginTop:"8px"}}>Ask admin to credit your account</p></div> : fiat.map((b:any)=>(
+                <h3 className="font-display" style={{fontSize:"16px",fontWeight:"600",marginBottom:"16px"}}>💵 Fiat</h3>
+                {fiat.length===0 ? <p className="text-muted text-sm">No balance</p> : fiat.map((b:any)=>(
                   <div key={b.currency} className="row-between" style={{padding:"10px 0",borderBottom:"1px solid rgba(255,255,255,0.04)"}}>
                     <div><span style={{fontWeight:"500"}}>{b.currency}</span><span style={{marginLeft:"8px",fontFamily:"Georgia,serif"}}>{b.amount.toLocaleString("en-US",{minimumFractionDigits:2})}</span></div>
-                    <span className="text-gradient" style={{fontWeight:"500"}}>{fmt(b.usdValue)}</span>
+                    <span className="text-gradient" style={{fontWeight:"500"}}>{fmt2(b.usdValue)}</span>
                   </div>
                 ))}
               </div>
               <div className="card" style={{padding:"24px"}}>
-                <h3 className="font-display" style={{fontSize:"16px",fontWeight:"600",marginBottom:"16px"}}>🪙 Crypto <span className="text-muted" style={{fontSize:"12px",fontWeight:"400"}}>Live rates</span></h3>
+                <h3 className="font-display" style={{fontSize:"16px",fontWeight:"600",marginBottom:"16px"}}>🪙 Crypto <span className="text-muted" style={{fontSize:"12px",fontWeight:"400"}}>Live</span></h3>
                 {crypto.length===0 ? <p className="text-muted text-sm">No crypto</p> : crypto.map((b:any)=>(
                   <div key={b.symbol} className="row-between" style={{padding:"10px 0",borderBottom:"1px solid rgba(255,255,255,0.04)"}}>
                     <div><span style={{fontWeight:"500",color:coinColors[b.symbol]||"#fff"}}>{b.symbol}</span>
                       <span style={{marginLeft:"8px",fontFamily:"Georgia,serif"}}>{b.amount.toLocaleString("en-US",{minimumFractionDigits:4})}</span>
                       <span className="text-muted text-xs" style={{marginLeft:"6px"}}>@ ${b.price?.toLocaleString()}</span></div>
-                    <span className="text-gradient">{fmt(b.usdValue)}</span>
+                    <span className="text-gradient">{fmt2(b.usdValue)}</span>
                   </div>
                 ))}
               </div>
@@ -90,16 +104,16 @@ export default function Dashboard() {
             </div>
           </div>
         )}
-        {tab==="profile" && <div className="card fade-in" style={{padding:"32px",maxWidth:"520px"}}><h2 className="font-display text-xl" style={{marginBottom:"24px"}}>👤 Profile</h2>
+        {tab==="profile" && <div className="card fade-in" style={{padding:"32px",maxWidth:"520px"}}><h2 className="font-display text-xl" style={{fontSize:"24px",fontWeight:"700",marginBottom:"24px"}}>👤 Profile</h2>
           {[{l:"Name",v:user.name},{l:"Username",v:"@"+user.username,c:"#d4af37"},{l:"Email",v:user.email},{l:"KYC",v:kyc,c:kyc==="VERIFIED"?"#22c55e":kyc==="PENDING"?"#facc15":"#ef4444"}].map(i=>(
             <div key={i.l} style={{marginBottom:"16px"}}><label className="text-xs text-muted">{i.l}</label><div style={{padding:"12px 16px",background:"rgba(255,255,255,0.04)",borderRadius:"10px",fontSize:"14px",color:i.c||"#fff"}}>{i.v}</div></div>
           ))}
         </div>}
-        {tab==="refer" && <div className="card fade-in" style={{padding:"32px",maxWidth:"520px"}}><h2 className="font-display text-xl" style={{marginBottom:"24px"}}>🔗 Referral</h2>
-          <div className="card" style={{background:"rgba(212,175,55,0.06)",borderColor:"rgba(212,175,55,0.15)",padding:"24px",textAlign:"center",marginBottom:"20px"}}><p className="text-xs text-muted" style={{marginBottom:"8px"}}>Your Code</p><p className="font-display" style={{fontSize:"32px",fontWeight:"700"}}><span className="text-gradient">{refCode}</span></p></div>
+        {tab==="refer" && <div className="card fade-in" style={{padding:"32px",maxWidth:"520px"}}><h2 className="font-display" style={{fontSize:"24px",fontWeight:"700",marginBottom:"24px"}}>🔗 Referral</h2>
+          <div className="card" style={{background:"rgba(212,175,55,0.06)",borderColor:"rgba(212,175,55,0.15)",padding:"24px",textAlign:"center",marginBottom:"20px"}}><p className="text-xs text-muted">Your Code</p><p className="font-display" style={{fontSize:"32px",fontWeight:"700"}}><span className="text-gradient">{refCode}</span></p></div>
           <div className="grid-2" style={{gap:"12px"}}><div className="stat"><div className="stat-value" style={{color:"#60a5fa"}}>0</div><div className="stat-label">Referrals</div></div><div className="stat"><div className="stat-value" style={{color:"#22c55e"}}>$0</div><div className="stat-label">Earned</div></div></div>
         </div>}
-        {tab==="settings" && <div className="card fade-in" style={{padding:"32px",maxWidth:"520px"}}><h2 className="font-display text-xl" style={{marginBottom:"24px"}}>⚙️ Settings</h2>
+        {tab==="settings" && <div className="card fade-in" style={{padding:"32px",maxWidth:"520px"}}><h2 className="font-display" style={{fontSize:"24px",fontWeight:"700",marginBottom:"24px"}}>⚙️ Settings</h2>
           {pwMsg&&<div className={`badge ${pwMsg.includes("✅")?"badge-green":"badge-red"}`} style={{marginBottom:"16px",padding:"10px",borderRadius:"8px",display:"block"}}>{pwMsg}</div>}
           <form onSubmit={changePw} style={{display:"flex",flexDirection:"column",gap:"12px"}}>
             <input type="password" value={curPw} onChange={e=>setCP(e.target.value)} placeholder="Current password" className="input" required />
