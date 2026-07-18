@@ -37,4 +37,4 @@ return(<div className="app"><div className="top"><div className="top-in">
 <div style={{display:"flex",gap:"6px",alignItems:"center"}}>
 <span style={{fontSize:"11px",padding:"3px 8px",borderRadius:"100px",color:x.kycStatus==="VERIFIED"?"#22c55e":x.kycStatus==="PENDING"?"#facc15":"#ef4444",background:x.kycStatus==="VERIFIED"?"rgba(34,197,94,0.1)":x.kycStatus==="PENDING"?"rgba(250,204,21,0.1)":"rgba(239,68,68,0.1)"}}>{x.kycStatus}</span>
 {x.role!=="ADMIN"&&<button onClick={()=>dl(x.id)} style={{padding:"4px 10px",background:"rgba(239,68,68,0.1)",border:"1px solid rgba(239,68,68,0.2)",borderRadius:"6px",color:"#ef4444",fontSize:"11px",cursor:"pointer"}}>Delete</button>}
-</div></div>))}</div></div></div></div></div>)
+</div></div>))}</div></div></div></div></div></div></div></div></div>)
