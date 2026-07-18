@@ -1,3 +1,63 @@
+#!/bin/bash
+
+# 1. FIXED CSS with hero-style background
+cat > app/globals.css << 'CSS'
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#0a0a0f;color:#fff;overflow-x:hidden}
+.bg-glow{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;overflow:hidden}
+.bg-glow .o{position:absolute;border-radius:50%;filter:blur(100px)}
+.bg-glow .o1{width:700px;height:700px;background:radial-gradient(circle,rgba(212,175,55,0.08),transparent);top:-200px;right:-100px;animation:f 14s ease-in-out infinite}
+.bg-glow .o2{width:500px;height:500px;background:radial-gradient(circle,rgba(212,175,55,0.06),transparent);bottom:-150px;left:-100px;animation:f 18s ease-in-out infinite reverse}
+.bg-glow .o3{width:400px;height:400px;background:radial-gradient(circle,rgba(255,255,255,0.03),transparent);top:40%;left:50%;animation:f 22s ease-in-out infinite 4s}
+@keyframes f{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-40px) scale(1.03)}}
+.app{min-height:100vh;display:flex;flex-direction:column;position:relative;z-index:1}
+.header{position:sticky;top:0;z-index:100;backdrop-filter:blur(24px);background:rgba(10,10,15,0.85);border-bottom:1px solid rgba(255,255,255,0.06)}
+.header-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 5%;width:100%}
+.main{flex:1;padding:28px 5%;width:100%}
+.card{background:rgba(255,255,255,0.03);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.06);border-radius:16px;transition:all .3s}
+.card:hover{border-color:rgba(212,175,55,0.12)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:12px 28px;border-radius:10px;font-size:14px;font-weight:600;border:none;cursor:pointer;transition:all .2s;text-decoration:none}
+.btn-primary{background:linear-gradient(135deg,#d4af37,#b8942e);color:#0a0a0f;box-shadow:0 4px 20px rgba(212,175,55,0.15)}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 25px rgba(212,175,55,0.25)}
+.btn-secondary{background:rgba(255,255,255,0.05);color:#e5e7eb;border:1px solid rgba(255,255,255,0.08)}
+.btn-secondary:hover{background:rgba(255,255,255,0.08)}
+.btn-sm{padding:8px 18px;font-size:12px;border-radius:8px}
+.input{width:100%;padding:12px 16px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:10px;color:#fff;font-size:14px;outline:none;transition:border .2s}
+.input:focus{border-color:rgba(212,175,55,0.3);box-shadow:0 0 0 3px rgba(212,175,55,0.06)}
+select.input{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px}
+.text-gradient{background:linear-gradient(135deg,#d4af37,#f0d060);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.text-muted{color:#6b7280}
+.text-sm{font-size:13px}
+.font-display{font-weight:700}
+.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:100px;font-size:11px;font-weight:500}
+.badge-green{background:rgba(34,197,94,0.1);color:#22c55e}
+.badge-red{background:rgba(239,68,68,0.1);color:#ef4444}
+.row{display:flex;align-items:center;gap:12px}
+.row-between{display:flex;align-items:center;justify-content:space-between}
+.row-wrap{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.tab{padding:8px 0;background:none;border:none;border-bottom:2px solid transparent;color:#6b7280;font-size:14px;cursor:pointer;font-weight:500}
+.tab.active{color:#d4af37;border-bottom-color:#d4af37}
+.stat{text-align:center;padding:20px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:12px}
+.stat-value{font-size:28px;font-weight:700}
+.stat-label{font-size:12px;color:#6b7280;margin-top:4px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeIn .4s ease-out}
+.loading{width:22px;height:22px;border:2px solid rgba(212,175,55,0.15);border-top-color:#d4af37;border-radius:50%;animation:s .7s linear infinite;margin:48px auto}
+@keyframes s{to{transform:rotate(360deg)}}
+@media(max-width:1024px){.grid-2{grid-template-columns:1fr}}
+CSS
+
+# 2. Layout with background
+cat > app/layout.tsx << 'EOF'
+import type { Metadata } from "next"; import "./globals.css";
+export const metadata:Metadata={title:"Global Gemini Wallet",description:"Multi-Currency Wealth Platform"};
+export default function RootLayout({children}:{children:React.ReactNode}){return(<html lang="en"><body><div className="bg-glow"><div className="o o1"/><div className="o o2"/><div className="o o3"/></div>{children}</body></html>)}
+EOF
+
+# 3. FIXED DASHBOARD - Working currency conversion, fiat list removed
+cat > app/dashboard/page.tsx << 'DASH'
 "use client"; import { useState, useEffect } from "react"; import Link from "next/link";
 export default function Dashboard() {
   const [user,setU]=useState<any>(null);const[tab,setT]=useState("wallet");
@@ -105,3 +165,42 @@ export default function Dashboard() {
   </div>}
   </main></div>);
 }
+DASH
+
+# 4. Admin page - full widescreen
+cat > app/admin/page.tsx << 'ADMIN'
+"use client";import{useState,useEffect}from"react";import Link from "next/link";
+export default function AdminPage(){const[users,setU]=useState<any[]>([]);const[email,setE]=useState("");const[curr,setC]=useState("USD");const[amt,setA]=useState("");const[msg,setMsg]=useState("");const[err,setErr]=useState("");
+const CC=["USD","EUR","GBP","JPY","CHF","CAD","AUD","CNY","INR","BRL","MXN","USDT","BTC","ETH","SOL"];
+useEffect(()=>{fetch("/api/auth/me").then(r=>r.json()).then(d=>{if(d.role!=="ADMIN"){window.location.href="/";return}fetch("/api/admin/users").then(r=>r.json()).then(d=>setU(d.users||[]))})},[]);
+const fd=async(e:any)=>{e.preventDefault();setMsg("");setErr("");try{const r=await fetch("/api/admin/fund",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email,currency:curr,amount:parseFloat(amt)})});const d=await r.json();if(!r.ok)throw new Error(d.error);setMsg("✅ Deposited "+amt+" "+curr);setA("")}catch(e:any){setErr(e.message)}};
+return(<div className="app"><header className="header"><div className="header-inner"><span className="font-display" style={{fontSize:"18px",fontWeight:"700"}}>🌍 Global Gemini <span className="text-gradient">Wallet</span> <span className="badge" style={{background:"rgba(212,175,55,0.1)",color:"#d4af37",marginLeft:"8px"}}>ADMIN</span></span>
+<div className="row"><Link href="/admin" className="tab active" style={{fontSize:"13px"}}>💫 Dashboard</Link><Link href="/admin/kyc" className="tab" style={{fontSize:"13px"}}>📋 KYC</Link><Link href="/admin/deposits" className="tab" style={{fontSize:"13px"}}>📥 Deposits</Link><Link href="/admin/withdrawals" className="tab" style={{fontSize:"13px"}}>📤 Withdrawals</Link>
+<button onClick={async()=>{await fetch("/api/auth/signout",{method:"POST"});window.location.href="/"}} className="btn btn-secondary btn-sm">Sign Out</button></div></div></header>
+<main className="main"><div className="fade-in">
+<h1 className="font-display" style={{fontSize:"28px",fontWeight:"700",marginBottom:"24px"}}><span className="text-gradient">⚡ Admin Panel</span></h1>
+<div className="grid-2" style={{gap:"24px",marginBottom:"24px"}}>
+<div className="stat"><div className="stat-value" style={{color:"#60a5fa"}}>{users.length}</div><div className="stat-label">Total Users</div></div>
+<div className="stat"><div className="stat-value" style={{color:"#facc15"}}>{users.filter((u:any)=>u.kycStatus==="PENDING").length}</div><div className="stat-label">KYC Pending</div></div>
+<div className="stat"><div className="stat-value" style={{color:"#22c55e"}}>{users.filter((u:any)=>u.kycStatus==="VERIFIED").length}</div><div className="stat-label">Verified</div></div>
+<div className="stat"><div className="stat-value" style={{color:"#a78bfa"}}>{users.filter((u:any)=>u.role==="USER").length}</div><div className="stat-label">Active Users</div></div>
+</div>
+<div className="grid-2" style={{gap:"24px"}}>
+<div className="card" style={{padding:"24px"}}><h3 className="font-display" style={{fontSize:"16px",fontWeight:"600",marginBottom:"16px"}}>💫 Deposit to User</h3>
+{msg&&<div className="badge badge-green" style={{marginBottom:"12px",padding:"10px",borderRadius:"8px",display:"block"}}>{msg}</div>}
+{err&&<div className="badge badge-red" style={{marginBottom:"12px",padding:"10px",borderRadius:"8px",display:"block"}}>{err}</div>}
+<form onSubmit={fd} style={{display:"flex",flexDirection:"column",gap:"12px"}}>
+<select value={email} onChange={e=>setE(e.target.value)} className="input" required><option value="">Select user...</option>{users.filter((u:any)=>u.role!=="ADMIN").map((u:any)=><option key={u.id} value={u.email}>{u.name} ({u.email})</option>)}</select>
+<div className="row" style={{gap:"8px"}}><select value={curr} onChange={e=>setC(e.target.value)} className="input" style={{width:"100px"}}>{CC.map(c=><option key={c} value={c}>{c}</option>)}</select>
+<input type="number" step="0.01" min="0.01" value={amt} onChange={e=>setA(e.target.value)} placeholder="Amount" className="input" style={{flex:1}} required/></div>
+<button type="submit" className="btn btn-primary" style={{width:"100%"}}>💫 Deposit</button></form></div>
+<div className="card" style={{padding:"24px"}}><h3 className="font-display" style={{fontSize:"16px",fontWeight:"600",marginBottom:"16px"}}>👥 Users</h3>
+<div style={{maxHeight:"400px",overflowY:"auto"}}>{users.map((u:any)=>(<div key={u.id} className="row-between" style={{padding:"8px 0",borderBottom:"1px solid rgba(255,255,255,0.04)"}}>
+<div><span style={{fontSize:"14px",fontWeight:"500"}}>{u.name}</span><span className="text-muted text-xs" style={{marginLeft:"6px"}}>{u.email}</span></div>
+<div className="row" style={{gap:"6px"}}><span className={`badge ${u.kycStatus==="VERIFIED"?"badge-green":u.kycStatus==="PENDING"?"badge-red":"badge-red"}`}>{u.kycStatus}</span></div>
+</div>))}</div></div></div></div></main></div>);}
+ADMIN
+
+# Push
+git add -A && git commit -m "Ultimate fix: working currency conversion, animated bg, fiat list removed" && git push
+echo "✅ ALL FIXES DEPLOYED!"
