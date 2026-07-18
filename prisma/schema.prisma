@@ -1,40 +1,47 @@
-generator client { provider = "prisma-client-js" }
-datasource db { provider = "postgresql" url = env("DATABASE_URL") }
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
 
 model User {
-  id            String   @id @default(cuid())
-  email         String   @unique
-  username      String   @unique
-  name          String
-  password      String
-  role          String   @default("USER")
-  country       String?
-  phone         String?
-  status        String   @default("ACTIVE")
-  kycStatus     String   @default("UNVERIFIED")
-  kycFullName   String?
-  kycDocType    String?
-  kycDocNumber  String?
-  kycDocImage   String?
+  id             String   @id @default(cuid())
+  email          String   @unique
+  username       String   @unique
+  name           String
+  password       String
+  role           String   @default("USER")
+  country        String?
+  phone          String?
+  status         String   @default("ACTIVE")
+  kycStatus      String   @default("UNVERIFIED")
+  kycFullName    String?
+  kycDocType     String?
+  kycDocNumber   String?
+  kycDocImage    String?
   kycSubmittedAt DateTime?
-  kycVerifiedAt DateTime?
-  kycVerifiedBy String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  wallets       Wallet[]
-  transactions  Transaction[]
-  notifications Notification[]
-  audits        AuditLog[]
+  kycVerifiedAt  DateTime?
+  kycVerifiedBy  String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  wallets        Wallet[]
+  transactions   Transaction[]
+  notifications  Notification[]
+  audits         AuditLog[]
 }
 
 model Wallet {
-  id        String    @id @default(cuid())
+  id        String   @id @default(cuid())
   userId    String
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   currency  String
-  balance   Decimal   @default(0) @db.Decimal(20,8)
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  balance   Decimal  @default(0) @db.Decimal(20, 8)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@unique([userId, currency])
 }
 
@@ -45,8 +52,8 @@ model Transaction {
   user        User     @relation(fields: [userId], references: [id])
   type        String
   currency    String
-  amount      Decimal  @db.Decimal(20,8)
-  fee         Decimal  @default(0) @db.Decimal(20,8)
+  amount      Decimal  @db.Decimal(20, 8)
+  fee         Decimal  @default(0) @db.Decimal(20, 8)
   fromWallet  String?
   toWallet    String?
   description String?
@@ -59,8 +66,9 @@ model ExchangeRate {
   id        String   @id @default(cuid())
   from      String
   to        String
-  rate      Decimal  @db.Decimal(20,10)
+  rate      Decimal  @db.Decimal(20, 10)
   updatedAt DateTime @default(now())
+
   @@unique([from, to])
 }
 

@@ -2,20 +2,18 @@ import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 const p = new PrismaClient();
 
-const FIAT_CURRENCIES = ["USD", "EUR", "GBP", "INR", "AED", "SAR", "JPY", "CNY", "AUD", "CAD"];
-const ALL_CURRENCIES = [...FIAT_CURRENCIES, "USDT", "BTC", "ETH", "SOL", "BNB"];
-
 async function main() {
-  // Admin
-  const adminPw = await bcrypt.hash("Admin@123456", 12);
+  const FIAT = ["USD", "EUR", "GBP", "INR", "AED", "SAR", "JPY", "CNY", "AUD", "CAD"];
+  const ALL = [...FIAT, "USDT", "BTC", "ETH", "SOL", "BNB"];
+
+  const pw = await bcrypt.hash("Admin@123456", 12);
   const admin = await p.user.upsert({
     where: { email: "admin@globalgemini.com" },
     update: {},
-    create: { email: "admin@globalgemini.com", username: "admin", name: "Admin", password: adminPw, role: "ADMIN", kycStatus: "VERIFIED", country: "AE" },
+    create: { email: "admin@globalgemini.com", username: "admin", name: "Admin", password: pw, role: "ADMIN", kycStatus: "VERIFIED" },
   });
 
-  // Admin wallets
-  for (const c of ALL_CURRENCIES) {
+  for (const c of ALL) {
     await p.wallet.upsert({
       where: { userId_currency: { userId: admin.id, currency: c } },
       update: { balance: 1000000 },
@@ -23,12 +21,12 @@ async function main() {
     });
   }
 
-  // Exchange rates (USD base)
   const rates: Record<string, number> = {
     USD: 1, EUR: 0.92, GBP: 0.79, INR: 83.5, AED: 3.67, SAR: 3.75,
     JPY: 149.5, CNY: 7.24, AUD: 1.54, CAD: 1.36, USDT: 1, BTC: 0.000015,
     ETH: 0.00029, SOL: 0.0069, BNB: 0.0017,
   };
+
   for (const [to, rate] of Object.entries(rates)) {
     await p.exchangeRate.upsert({
       where: { from_to: { from: "USD", to } },
@@ -37,7 +35,6 @@ async function main() {
     });
   }
 
-  console.log("✅ Seeded: admin@globalgemini.com / Admin@123456");
-  console.log("✅ Currencies: " + ALL_CURRENCIES.join(", "));
+  console.log("✅ Seeded admin@globalgemini.com / Admin@123456");
 }
 main().catch(console.error).finally(() => p.$disconnect());
