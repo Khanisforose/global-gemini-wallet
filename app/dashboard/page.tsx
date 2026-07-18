@@ -5,7 +5,7 @@ export default function Dashboard() {
   const [txs, setTxs] = useState<any[]>([]); const [kyc, setK] = useState("UNVERIFIED");
   const [to, setTo] = useState(""); const [sendAmt, setSA] = useState(""); const [sendCurr, setSC] = useState("USD"); const [sendMsg, setSM] = useState(""); const [sendErr, setSE] = useState("");
   const [curPw, setCP] = useState(""); const [newPw, setNP] = useState(""); const [pwMsg, setPM] = useState("");
-  const [displayCurr,setDC]=useState("USD");const [rates,setRates]=useState({}); const [refCode] = useState("GEM" + Math.random().toString(36).slice(2,8).toUpperCase());
+  const [displayCurr,setDC]=useState("USD");const [rates,setRates]=useState({} as Record<string,number>); const [refCode] = useState("GEM" + Math.random().toString(36).slice(2,8).toUpperCase());
   const coinColors: Record<string,string> = { BTC:"#f7931a", ETH:"#627eea", SOL:"#9945ff", USDT:"#26a17b" };
   const txColors: Record<string,string> = { TRANSFER:"#a78bfa", ADMIN_FUNDING:"#22c55e", DEPOSIT:"#22c55e" };
   const txLabels: Record<string,string> = { TRANSFER:"Sent", ADMIN_FUNDING:"Deposited", DEPOSIT:"Received" };
@@ -13,7 +13,7 @@ export default function Dashboard() {
   useEffect(() => {
     fetch("/api/auth/me").then(r=>r.json()).then(d => { if (!d.id) { window.location.href="/"; return; } setU(d); setK(d.kycStatus||"UNVERIFIED"); });
     fetch("/api/balances").then(r=>r.json()).then(d => { setF(d.balances||[]); setC(d.crypto||[]); setTot(d.totalUSD||0); });
-    fetch("/api/transactions").then(r=>r.json()).then(d => setTxs(d.transactions||[])); fetch("/api/exchange-rates").then(r=>r.json()).then(d=>{const m:any={};(d.rates||[]).forEach((r:any)=>m[r.currency]=r.rate);setRates(m)}).catch(()=>{});
+    fetch("/api/transactions").then(r=>r.json()).then(d => setTxs(d.transactions||[])); fetch("/api/exchange-rates").then(r=>r.json()).then(d=>{const m:any={};(d.rates||[]).forEach((r:any)=>m[r.currency]=r.rate);setRates(m as Record<string,number>)}).catch(()=>{});
   }, []);
 
   const sendFunds = async(e:any) => { e.preventDefault(); setSM(""); setSE(""); try { const r=await fetch("/api/transfer",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({to,currency:sendCurr,amount:parseFloat(sendAmt)})}); const d=await r.json(); if(!r.ok) throw new Error(d.error); setSM(`✅ Sent ${sendAmt} ${sendCurr}`); setSA(""); setTo(""); } catch(e:any) { setSE(e.message); } };
