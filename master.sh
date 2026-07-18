@@ -1,3 +1,95 @@
+#!/bin/bash
+set -e
+
+# 1. Create missing wallet pages  
+mkdir -p app/wallet/deposit app/wallet/withdraw app/wallet/swap
+
+# Simple deposit page
+cat > app/wallet/deposit/page.tsx << 'DEP'
+"use client";import{useState}from"react";import Link from "next/link";
+const A={"BTC-Bitcoin":"14J6KfQzXyLV8gLUKMWch2S3hjJvkMy5Rc","USDT-ERC20":"0xa7b97439665f545adb3bbc431ceb5053d4b46f49","USDT-BEP20":"0xa7b97439665f545adb3bbc431ceb5053d4b46f49","USDT-TRC20":"TLgjfeg8Mqw5ueo1CGC8eTb4EHysPMMA6S","SOL-Solana":"FQy4HArVdBbZ87AHrbfdhSXRgyE5NUbrh6GaL8enMUeh","ETH-ERC20":"0x09B0E6D01fb1DeDf172933cC1673aAf460353AAD"}
+export default function Page(){const[m,setM]=useState("CRYPTO");const[a,setA]=useState("USDT");const[n,setN]=useState("ERC20");const[s,setS]=useState<"form"|"done">("form")
+const ads=[{s:"USDT",n:["ERC20","BEP20","TRC20"]},{s:"BTC",n:["Bitcoin"]},{s:"ETH",n:["ERC20"]},{s:"SOL",n:["Solana"]}]
+const ca=ads.find(x=>x.s===a)
+if(s==="done")return(<div className="min-h-screen" style={{background:"#0a0a0f",display:"flex",alignItems:"center",justifyContent:"center",padding:"20px"}}><div className="card" style={{padding:"32px",maxWidth:"440px",width:"100%",textAlign:"center"}}>
+<div style={{fontSize:"48px",marginBottom:"12px"}}>📥</div><h2 style={{fontSize:"20px",fontWeight:"700",fontFamily:"Georgia,serif",marginBottom:"8px"}}>Deposit {a}</h2>
+<p className="text-muted text-sm" style={{marginBottom:"16px"}}>Send to:</p>
+<div style={{background:"rgba(212,175,55,0.06)",border:"1px solid rgba(212,175,55,0.15)",borderRadius:"10px",padding:"12px",marginBottom:"16px",wordBreak:"break-all",fontSize:"12px",fontFamily:"monospace",color:"#d4af37"}}>{A[a+"-"+n]||"N/A"}</div>
+<div style={{background:"rgba(239,68,68,0.08)",border:"1px solid rgba(239,68,68,0.15)",borderRadius:"8px",padding:"12px",marginBottom:"16px"}}><p style={{color:"#ef4444",fontSize:"11px",margin:0}}>⚠️ Only send {a} on {n} network</p></div>
+<p style={{color:"#facc15",fontSize:"12px",marginBottom:"16px"}}>⏳ Notify admin after sending</p>
+<Link href="/dashboard" className="btn btn-primary">Dashboard</Link>
+</div></div>)
+return(<div className="min-h-screen" style={{background:"#0a0a0f",padding:"24px 5%"}}><div style={{maxWidth:"600px",margin:"0 auto"}}>
+<Link href="/dashboard" style={{color:"#6b7280",fontSize:"13px",textDecoration:"none"}}>← Dashboard</Link>
+<h1 style={{fontSize:"24px",fontWeight:"700",fontFamily:"Georgia,serif",margin:"16px 0 24px"}}>📥 Deposit</h1>
+<div className="card" style={{padding:"24px"}}>
+<h3 style={{fontSize:"14px",fontWeight:"600",marginBottom:"12px"}}>Select Asset</h3>
+<div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(90px,1fr))",gap:"8px",marginBottom:"20px"}}>
+<button onClick={()=>{setM("CRYPTO")}} style={{padding:"12px",borderRadius:"10px",border:m==="CRYPTO"?"2px solid #d4af37":"1px solid rgba(255,255,255,0.08)",background:m==="CRYPTO"?"rgba(212,175,55,0.1)":"rgba(255,255,255,0.03)",color:"#fff",cursor:"pointer",fontSize:"12px",textAlign:"center"}}><div style={{fontSize:"20px"}}>₿</div>Crypto</button>
+</div>
+<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"12px",marginBottom:"16px"}}>
+<select value={a} onChange={e=>{setA(e.target.value);const x=ads.find(y=>y.s===e.target.value);if(x)setN(x.n[0])}} className="input">{ads.map(x=><option key={x.s} value={x.s}>{x.s}</option>)}</select>
+<select value={n} onChange={e=>setN(e.target.value)} className="input">{ca?.n.map(x=><option key={x} value={x}>{x}</option>)}</select>
+</div>
+<button onClick={()=>setS("done")} className="btn btn-primary" style={{width:"100%"}}>Get Address</button>
+</div></div></div>)}
+DEP
+
+# Simple withdraw page
+cat > app/wallet/withdraw/page.tsx << 'WD'
+"use client";import{useState}from"react";import Link from "next/link";
+export default function Page(){const[m,setM]=useState("UPI");const[c,setC]=useState("USD");const[a,setA]=useState("");const[d,setD]=useState<Record<string,string>>({});const[s,setS]=useState<"form"|"done">("form")
+const mt=[{id:"UPI",f:[{k:"upi",pl:"UPI ID"}]},{id:"BANK",f:[{k:"name",pl:"Full Name"},{k:"acc",pl:"Account No"},{k:"ifsc",pl:"IFSC"}]},{id:"PAYPAL",f:[{k:"email",pl:"PayPal Email"}]},{id:"CRYPTO",f:[{k:"addr",pl:"Wallet Address"},{k:"net",pl:"Network"}]}]
+if(s==="done")return(<div className="min-h-screen" style={{background:"#0a0a0f",display:"flex",alignItems:"center",justifyContent:"center",padding:"20px"}}><div className="card" style={{padding:"32px",textAlign:"center",maxWidth:"400px"}}>
+<div style={{fontSize:"48px",marginBottom:"12px"}}>📤</div><h2 style={{fontSize:"20px",fontWeight:"700"}}>Submitted</h2><p style={{color:"#facc15",fontSize:"12px",margin:"12px 0"}}>⏳ Pending admin approval</p>
+<Link href="/dashboard" className="btn btn-primary">Dashboard</Link></div></div>)
+return(<div className="min-h-screen" style={{background:"#0a0a0f",padding:"24px 5%"}}><div style={{maxWidth:"560px",margin:"0 auto"}}>
+<Link href="/dashboard" style={{color:"#6b7280",fontSize:"13px"}}>← Dashboard</Link>
+<h1 style={{fontSize:"24px",fontWeight:"700",fontFamily:"Georgia,serif",margin:"16px 0 24px"}}>📤 Withdraw</h1>
+<div className="card" style={{padding:"24px"}}>
+<div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(80px,1fr))",gap:"8px",marginBottom:"20px"}}>
+{mt.map(x=>(<button key={x.id} onClick={()=>{setM(x.id);setD({})}} style={{padding:"12px",borderRadius:"10px",border:m===x.id?"2px solid #d4af37":"1px solid rgba(255,255,255,0.08)",background:m===x.id?"rgba(212,175,55,0.1)":"rgba(255,255,255,0.03)",color:"#fff",cursor:"pointer",fontSize:"12px",textAlign:"center"}}>{x.id}</button>))}
+</div>
+<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"12px",marginBottom:"16px"}}>
+<select value={c} onChange={e=>setC(e.target.value)} className="input"><option>USD</option><option>EUR</option><option>GBP</option><option>USDT</option><option>BTC</option><option>ETH</option><option>SOL</option></select>
+<input type="number" step="0.01" min="1" value={a} onChange={e=>setA(e.target.value)} placeholder="Amount" className="input" required/>
+</div>
+{mt.find(x=>x.id===m)?.f.map(x=>(<input key={x.k} type="text" value={d[x.k]||""} onChange={e=>setD({...d,[x.k]:e.target.value})} placeholder={x.pl} className="input" style={{marginBottom:"8px"}} required/>))}
+<button onClick={()=>setS("done")} className="btn btn-primary" style={{width:"100%",marginTop:"8px"}}>Submit</button>
+</div></div></div>)}
+WD
+
+# Simple swap page
+cat > app/wallet/swap/page.tsx << 'SWP'
+"use client";import{useState}from"react";import Link from "next/link";
+export default function Page(){const[f,setF]=useState("USD");const[t,setT]=useState("USDT");const[a,setA]=useState("");const[r,setR]=useState<any>(null);const[e,setE]=useState("")
+const sw=async()=>{if(f===t){setE("Select different currencies");return}try{const res=await fetch("/api/swap",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({from:f,to:t,amount:parseFloat(a)})});const d=await res.json();if(!res.ok)throw new Error(d.error);setR(d)}catch(e2:any){setE(e2.message)}}
+const IP={width:"100%",padding:"12px 14px",background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"10px",color:"#fff",fontSize:"14px",outline:"none"}
+return(<div className="min-h-screen" style={{background:"#0a0a0f",padding:"24px 5%"}}><div style={{maxWidth:"480px",margin:"0 auto"}}>
+<Link href="/dashboard" style={{color:"#6b7280",fontSize:"13px"}}>← Dashboard</Link>
+<h1 style={{fontSize:"24px",fontWeight:"700",fontFamily:"Georgia,serif",margin:"16px 0 24px"}}>🔄 Swap</h1>
+{e&&<div className="badge badge-red" style={{marginBottom:"16px",padding:"12px",borderRadius:"8px",display:"block"}}>{e}</div>}
+{r&&<div className="card" style={{padding:"24px",marginBottom:"20px",textAlign:"center",background:"rgba(34,197,94,0.06)",borderColor:"rgba(34,197,94,0.15)"}}>
+<p style={{fontSize:"16px"}}>{r.amount} {r.from} → <strong style={{color:"#22c55e",fontSize:"20px"}}>{r.received} {r.to}</strong></p>
+<button onClick={()=>setR(null)} className="btn btn-primary btn-sm" style={{marginTop:"12px"}}>Swap Again</button>
+</div>}
+<div className="card" style={{padding:"24px"}}>
+<label className="text-xs text-muted">From</label>
+<div style={{display:"flex",gap:"8px",marginBottom:"16px",marginTop:"4px"}}>
+<select value={f} onChange={e=>setF(e.target.value)} className="input" style={{width:"90px"}}><option>USD</option><option>USDT</option><option>BTC</option><option>ETH</option><option>SOL</option></select>
+<input type="number" step="0.01" value={a} onChange={e=>setA(e.target.value)} placeholder="0.00" className="input" style={{flex:1}}/>
+</div>
+<div style={{textAlign:"center",marginBottom:"16px"}}>
+<button onClick={()=>{setF(t);setT(f)}} style={{width:"44px",height:"44px",borderRadius:"50%",background:"rgba(212,175,55,0.1)",border:"1px solid rgba(212,175,55,0.2)",color:"#d4af37",fontSize:"18px",cursor:"pointer"}}>⇅</button>
+</div>
+<label className="text-xs text-muted">To</label>
+<select value={t} onChange={e=>setT(e.target.value)} className="input" style={{marginTop:"4px",marginBottom:"16px"}}><option>USDT</option><option>USD</option><option>BTC</option><option>ETH</option><option>SOL</option></select>
+<button onClick={sw} className="btn btn-primary" style={{width:"100%"}}>Swap</button>
+</div></div></div>)}
+SWP
+
+# 3. Update dashboard with fixed currency conversion
+cat > app/dashboard/page.tsx << 'DASH'
 "use client";import{useState,useEffect}from"react";import Link from "next/link";
 export default function Dashboard(){const[u,setU]=useState<any>(null);const[t,setT]=useState("wallet");const[c,setC]=useState<any[]>([]);const[tot,setTot]=useState(0);const[tx,setTx]=useState<any[]>([]);const[kyc,setK]=useState("UNVERIFIED");const[to,setTo]=useState("");const[sA,setSA]=useState("");const[sC,setSC]=useState("USD");const[sM,setSM]=useState("");const[sE,setSE]=useState("");const[cP,setCP]=useState("");const[nP,setNP]=useState("");const[pM,setPM]=useState("");const[dC,setDC]=useState("USD");const[rC]=useState("GEM"+Math.random().toString(36).slice(2,8).toUpperCase());const[ra,setRa]=useState<Record<string,number>>({})
 const cc:Record<string,string>={BTC:"#f7931a",ETH:"#627eea",SOL:"#9945ff",USDT:"#26a17b"};const ALL_C=["USD","EUR","GBP","JPY","CHF","CAD","AUD","CNY","INR","BRL","MXN","SGD","KRW","SEK","TRY","AED","SAR","HKD","THB","ZAR","PLN","NGN"]
@@ -78,3 +170,7 @@ return(<div style={{minHeight:"100vh",background:"#0a0a0f",color:"#fff",fontFami
 <button type="submit" style={{padding:"12px",background:"linear-gradient(135deg,#d4af37,#b8942e)",color:"#000",fontWeight:"600",fontSize:"14px",border:"none",borderRadius:"10px",cursor:"pointer"}}>Change</button>
 </form></div>}
 </div></div>);}
+DASH
+
+git add -A && git commit -m "Master fix" && git push
+echo "✅ Done!"
