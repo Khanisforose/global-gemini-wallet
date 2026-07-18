@@ -28,7 +28,7 @@ export async function POST(req: Request) {
     let fromInUSD = from === "USD" ? amount : amount * (cryptoPrices[from] || 0);
     let received = to === "USD" ? fromInUSD : fromInUSD / (cryptoPrices[to] || 1);
     
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx:any) => {
       await tx.balance.update({
         where: { walletId_currency: { walletId: user.wallet!.id, currency: from } },
         data: { amount: { decrement: amount } },
