@@ -8,7 +8,7 @@ export default function Dashboard(){
   const xf=async()=>{if(fC===tC){setSE("Same currency");return}setSM("");setSE("");try{const r=await fetch("/api/transfer",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({fromCurrency:fC,toCurrency:tC,amount:parseFloat(sA)})});const d=await r.json();if(!r.ok)throw new Error(d.error);setSM("✅ Swapped!");setSA("")}catch(e:any){setSE(e.message)}}
   const cpw=async(e:any)=>{e.preventDefault();setPM("");try{const r=await fetch("/api/auth/password",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({currentPassword:cP,newPassword:nP})});const d=await r.json();if(!r.ok)throw new Error(d.error);setPM("✅ Changed!");setCP("");setNP("")}catch(e:any){setPM(e.message)}}
   if(!u)return<div className="app"><div className="lo"/></div>
-  const cv=(n:number)=>{const cu=dC;const r=ra[cu]||1;const v=cu==="USD"?n:n*r;return(SYM[cu]||cu)+" "+v.toLocaleString("en-US",{minimumFractionDigits:2})}
+  const cv=(n:any)=>{if(n===undefined||n===null) return (SYM[dC]||dC)+" 0.00";const cu=dC;const r=ra[cu]||1;const v=cu==="USD"?n:n*r;return(SYM[cu]||cu)+" "+Number(v).toLocaleString("en-US",{minimumFractionDigits:2})}
   const tabs=[{k:"wallet",l:"💰 Wallet"},{k:"exchange",l:"🔄 Exchange"},{k:"profile",l:"👤 Profile"},{k:"settings",l:"⚙️ Settings"}]
 
   return(<div className="app">
