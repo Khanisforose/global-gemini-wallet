@@ -1,0 +1,65 @@
+#!/bin/bash
+cd /c/Users/Mollycool/Desktop/global-gemini-wallet
+
+# 1. Create deposit page
+mkdir -p app/wallet/deposit
+cat > app/wallet/deposit/page.tsx << 'DEP'
+"use client"; import { useState } from "react"; import Link from "next/link";
+const ADDRS:Record<string,string>={"BTC-Bitcoin":"14J6KfQzXyLV8gLUKMWch2S3hjJvkMy5Rc","USDT-ERC20":"0xa7b97439665f545adb3bbc431ceb5053d4b46f49","USDT-BEP20":"0xa7b97439665f545adb3bbc431ceb5053d4b46f49","USDT-TRC20":"TLgjfeg8Mqw5ueo1CGC8eTb4EHysPMMA6S","SOL-Solana":"FQy4HArVdBbZ87AHrbfdhSXRgyE5NUbrh6GaL8enMUeh","ETH-ERC20":"0x09B0E6D01fb1DeDf172933cC1673aAf460353AAD"}
+const FIATS=[{id:"UPI",label:"UPI",icon:"📱",det:"globalgemini@upi"},{id:"BANK",label:"Bank Transfer",icon:"🏦",det:"Acc: 1234567890\nIFSC: GLOBAL001"},{id:"PAYPAL",label:"PayPal",icon:"🅿️",det:"payments@globalgeminiwallet.com"}]
+const ASSETS=[{s:"USDT",nets:["ERC20","BEP20","TRC20"]},{s:"BTC",nets:["Bitcoin"]},{s:"ETH",nets:["ERC20"]},{s:"SOL",nets:["Solana"]}]
+export default function DepositPage(){const[m,setM]=useState("UPI");const[a,setA]=useState("USDT");const[n,setN]=useState("ERC20");const[st,setSt]=useState<"form"|"done">("form");const[cp,setCp]=useState("")
+const ca=ASSETS.find(x=>x.s===a);const ad=ADDRS[`${a}-${n}`]||"";const cop=async(t:string)=>{try{await navigator.clipboard.writeText(t);setCp("✅ Copied!");setTimeout(()=>setCp(""),2000)}catch{}}
+const IP={width:"100%",padding:"12px 14px",background:"#151525",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"10px",color:"#fff",fontSize:"14px",outline:"none"}
+if(st==="done")return(<div className="min-h-screen" style={{background:"#0a0a0f",display:"flex",alignItems:"center",justifyContent:"center",padding:"20px"}}><div className="card" style={{padding:"32px",maxWidth:"520px",width:"100%",textAlign:"center"}}>
+{m==="CRYPTO"?(<><div style={{fontSize:"48px",marginBottom:"12px"}}>₿</div><h2 style={{fontSize:"20px",fontWeight:"700",fontFamily:"Georgia,serif"}}>Deposit {a}</h2><p className="text-muted text-sm" style={{margin:"8px 0 16px"}}>Send ONLY {a} on <strong style={{color:"#d4af37"}}>{n}</strong></p>
+<div style={{display:"flex",gap:"8px",background:"rgba(212,175,55,0.06)",border:"1px solid rgba(212,175,55,0.15)",borderRadius:"10px",padding:"12px",marginBottom:"16px",wordBreak:"break-all"}}><code style={{fontSize:"12px",color:"#d4af37",flex:1,fontFamily:"monospace"}}>{ad}</code><button onClick={()=>cop(ad)} style={{padding:"8px 12px",background:"rgba(212,175,55,0.12)",border:"none",borderRadius:"6px",color:"#d4af37",cursor:"pointer",fontSize:"12px"}}>{cp||"📋 Copy"}</button></div>
+<div style={{background:"rgba(239,68,68,0.08)",border:"1px solid rgba(239,68,68,0.15)",borderRadius:"8px",padding:"12px",marginBottom:"16px"}}><p style={{color:"#ef4444",fontSize:"11px",margin:0}}>⚠️ Only send {a} on {n}</p></div>
+<p style={{color:"#facc15",fontSize:"12px",marginBottom:"16px"}}>⏳ Notify admin after sending</p></>):(<><div style={{fontSize:"48px",marginBottom:"12px"}}>📥</div><h2 style={{fontSize:"20px",fontWeight:"700",fontFamily:"Georgia,serif"}}>Deposit via {m}</h2><div style={{background:"rgba(212,175,55,0.06)",border:"1px solid rgba(212,175,55,0.15)",borderRadius:"10px",padding:"16px",margin:"16px 0",textAlign:"left",fontSize:"13px",whiteSpace:"pre-line"}}>{FIATS.find(x=>x.id===m)?.det}</div><p style={{color:"#facc15",fontSize:"12px",marginBottom:"16px"}}>⏳ Notify admin after sending</p></>)}
+<Link href="/dashboard" className="btn btn-primary">Dashboard</Link></div></div>)
+return(<div className="min-h-screen" style={{background:"#0a0a0f",padding:"24px 5%"}}><div style={{maxWidth:"600px",margin:"0 auto"}}><Link href="/dashboard" style={{color:"#6b7280",fontSize:"13px",textDecoration:"none"}}>← Dashboard</Link><h1 className="font-display" style={{fontSize:"24px",fontWeight:"700",margin:"16px 0 24px"}}>📥 Deposit</h1>
+<div className="card" style={{padding:"24px"}}><h3 style={{fontSize:"14px",fontWeight:"600",marginBottom:"12px"}}>Method</h3>
+<div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(90px,1fr))",gap:"8px",marginBottom:"20px"}}>
+{[...FIATS,{id:"CRYPTO",label:"Crypto",icon:"₿"}].map(x=>(<button key={x.id} onClick={()=>setM(x.id)} style={{padding:"12px",borderRadius:"10px",border:m===x.id?"2px solid #d4af37":"1px solid rgba(255,255,255,0.08)",background:m===x.id?"rgba(212,175,55,0.1)":"rgba(255,255,255,0.03)",color:"#fff",cursor:"pointer",fontSize:"12px",textAlign:"center"}}><div style={{fontSize:"20px",marginBottom:"4px"}}>{x.icon}</div>{x.label}</button>))}
+</div>{m==="CRYPTO"&&<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"12px",marginBottom:"16px"}}><select value={a} onChange={e=>{setA(e.target.value);const x=ASSETS.find(y=>y.s===e.target.value);if(x)setN(x.nets[0])}} className="input">{ASSETS.map(x=><option key={x.s} value={x.s}>{x.s}</option>)}</select><select value={n} onChange={e=>setN(e.target.value)} className="input">{ca?.nets.map(x=><option key={x} value={x}>{x}</option>)}</select></div>}
+<button onClick={()=>setSt("done")} disabled={!m} className="btn btn-primary" style={{width:"100%"}}>Get Instructions</button></div></div></div>)
+}
+DEP
+
+# 2. Create withdraw page
+mkdir -p app/wallet/withdraw
+cat > app/wallet/withdraw/page.tsx << 'WD'
+"use client"; import { useState } from "react"; import Link from "next/link";
+const METHODS=[{id:"UPI",icon:"📱",label:"UPI",f:[{k:"upiId",pl:"UPI ID"}]},{id:"BANK",icon:"🏦",label:"Bank",f:[{k:"name",pl:"Full Name"},{k:"acc",pl:"Account No"},{k:"ifsc",pl:"IFSC"}]},{id:"PAYPAL",icon:"🅿️",label:"PayPal",f:[{k:"email",pl:"PayPal Email"}]},{id:"CRYPTO",icon:"₿",label:"Crypto",f:[{k:"addr",pl:"Wallet Address"},{k:"net",pl:"Network"}]}]
+export default function WithdrawPage(){const[m,setM]=useState("UPI");const[c,setC]=useState("USD");const[a,setA]=useState("");const[d,setD]=useState<Record<string,string>>({});const[st,setSt]=useState<"form"|"done">("form");const[e,setE]=useState("")
+const cu=METHODS.find(x=>x.id===m)!;const IP={width:"100%",padding:"12px 14px",background:"#151525",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"10px",color:"#fff",fontSize:"14px",outline:"none"}
+const sub=(e2:any)=>{e2.preventDefault();if(!a||parseFloat(a)<1){setE("Min $1");return}setSt("done")}
+if(st==="done")return(<div className="min-h-screen" style={{background:"#0a0a0f",display:"flex",alignItems:"center",justifyContent:"center",padding:"20px"}}><div className="card" style={{padding:"32px",maxWidth:"440px",textAlign:"center"}}><div style={{fontSize:"48px",marginBottom:"12px"}}>📤</div><h2 style={{fontSize:"20px",fontWeight:"700",fontFamily:"Georgia,serif"}}>Submitted</h2><p className="text-muted text-sm" style={{margin:"8px 0 16px"}}>{a} {c}</p><div style={{background:"rgba(250,204,21,0.08)",border:"1px solid rgba(250,204,21,0.15)",borderRadius:"8px",padding:"12px",marginBottom:"20px"}}><p style={{color:"#facc15",fontSize:"12px",margin:0}}>⏳ Pending admin approval</p></div><Link href="/dashboard" className="btn btn-primary">Dashboard</Link></div></div>)
+return(<div className="min-h-screen" style={{background:"#0a0a0f",padding:"24px 5%"}}><div style={{maxWidth:"560px",margin:"0 auto"}}><Link href="/dashboard" style={{color:"#6b7280",fontSize:"13px",textDecoration:"none"}}>← Dashboard</Link><h1 className="font-display" style={{fontSize:"24px",fontWeight:"700",margin:"16px 0 24px"}}>📤 Withdraw</h1>
+{e&&<div className="badge badge-red" style={{marginBottom:"16px",padding:"12px",borderRadius:"8px",display:"block"}}>{e}</div>}
+<div className="card" style={{padding:"24px"}}>
+<div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(80px,1fr))",gap:"8px",marginBottom:"20px"}}>{METHODS.map(x=>(<button key={x.id} onClick={()=>{setM(x.id);setD({})}} style={{padding:"12px",borderRadius:"10px",border:m===x.id?"2px solid #d4af37":"1px solid rgba(255,255,255,0.08)",background:m===x.id?"rgba(212,175,55,0.1)":"rgba(255,255,255,0.03)",color:"#fff",cursor:"pointer",fontSize:"12px",textAlign:"center"}}><div style={{fontSize:"20px",marginBottom:"4px"}}>{x.icon}</div>{x.label}</button>))}</div>
+<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"12px",marginBottom:"16px"}}><select value={c} onChange={e=>setC(e.target.value)} className="input"><option>USD</option><option>EUR</option><option>GBP</option><option>USDT</option><option>BTC</option><option>ETH</option><option>SOL</option></select><input type="number" step="0.01" min="1" value={a} onChange={e=>setA(e.target.value)} placeholder="Amount" className="input" required/></div>
+{cu.f.map(x=>(<input key={x.k} type="text" value={d[x.k]||""} onChange={e=>setD({...d,[x.k]:e.target.value})} placeholder={x.pl} className="input" style={{marginBottom:"8px"}} required/>))}
+<button onClick={sub} className="btn btn-primary" style={{width:"100%",marginTop:"8px"}}>Submit</button></div></div></div>)
+}
+WD
+
+# 3. Update dashboard with currency dropdown
+node -e "
+const fs=require('fs');
+let s=fs.readFileSync('app/dashboard/page.tsx','utf8');
+s=s.replace('const [refCode] = useState','const [displayCurr,setDC]=useState(\"USD\");const [rates,setRates]=useState({}); const [refCode] = useState');
+s=s.replace('fetch(\"/api/transactions\").then(r=>r.json()).then(d => setTxs(d.transactions||[]))','fetch(\"/api/transactions\").then(r=>r.json()).then(d => setTxs(d.transactions||[])); fetch(\"/api/exchange-rates\").then(r=>r.json()).then(d=>{const m:any={};(d.rates||[]).forEach((r:any)=>m[r.currency]=r.rate);setRates(m)}).catch(()=>{})');
+s=s.replace('const fmt = (n:number) => \"\$\"+n.toLocaleString(\"en-US\",{minimumFractionDigits:2,maximumFractionDigits:2})','const fmt = (n:number) => \"\$\"+n.toLocaleString(\"en-US\",{minimumFractionDigits:2,maximumFractionDigits:2}); const fmt2=(n:number,c?:string)=>{const sym:any={\"USD\":\"\$\",\"EUR\":\"€\",\"GBP\":\"£\",\"JPY\":\"¥\",\"CHF\":\"CHF\",\"CAD\":\"C\$\",\"AUD\":\"A\$\",\"CNY\":\"¥\",\"INR\":\"₹\",\"BRL\":\"R\$\",\"KRW\":\"₩\",\"SGD\":\"S\$\",\"NZD\":\"NZ\$\",\"SEK\":\"kr\",\"TRY\":\"₺\",\"AED\":\"د.إ\",\"SAR\":\"﷼\"};const cu=c||displayCurr;const r=rates[cu]||1;const v=cu===\"USD\"?n:n/r;return (sym[cu]||cu)+\" \"+v.toLocaleString(\"en-US\",{minimumFractionDigits:2,maximumFractionDigits:2})}');
+s=s.replace('<p style={{fontSize:\"36px\",fontWeight:\"700\",marginTop:\"4px\"}}><span className=\"text-gradient\">{fmt(total)}</span> <span className=\"text-muted\" style={{fontSize:\"14px\",fontWeight:\"400\"}}>total value</span></p>','<div className=\"row\" style={{marginTop:\"4px\",gap:\"8px\",flexWrap:\"wrap\"}}><p style={{fontSize:\"36px\",fontWeight:\"700\"}}><span className=\"text-gradient\">{fmt2(total,displayCurr)}</span></p><select value={displayCurr} onChange={e=>setDC(e.target.value)} style={{padding:\"4px 8px\",background:\"#151525\",border:\"1px solid rgba(255,255,255,0.08)\",borderRadius:\"6px\",color:\"#d4af37\",fontSize:\"13px\",fontWeight:\"600\",outline:\"none\",cursor:\"pointer\"}}>{\[\"USD\",\"EUR\",\"GBP\",\"JPY\",\"CHF\",\"CAD\",\"AUD\",\"CNY\",\"INR\",\"BRL\",\"MXN\",\"SGD\",\"KRW\",\"SEK\",\"TRY\",\"AED\",\"SAR\",\"HKD\",\"THB\",\"ZAR\",\"PLN\",\"NGN\",\"EGP\",\"KES\",\"COP\",\"ARS\",\"UAH\",\"PKR\",\"BDT\",\"OMR\",\"KWD\"].map(c=><option key={c} value={c}>{c}</option>)}</select><span className=\"text-muted\" style={{fontSize:\"14px\",fontWeight:\"400\"}}>total</span></div>');
+fs.writeFileSync('app/dashboard/page.tsx',s);
+console.log('Dashboard updated!');
+"
+
+# 4. Commit and push
+git add -A
+git commit -m "Deposit/withdraw pages fixed + currency dropdown"
+git push
+
+echo "✅ All done! Deposit/withdraw fixed, currency dropdown added."

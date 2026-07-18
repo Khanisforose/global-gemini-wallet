@@ -5,7 +5,7 @@ export default function Dashboard() {
   const [txs, setTxs] = useState<any[]>([]); const [kyc, setK] = useState("UNVERIFIED");
   const [to, setTo] = useState(""); const [sendAmt, setSA] = useState(""); const [sendCurr, setSC] = useState("USD"); const [sendMsg, setSM] = useState(""); const [sendErr, setSE] = useState("");
   const [curPw, setCP] = useState(""); const [newPw, setNP] = useState(""); const [pwMsg, setPM] = useState("");
-  const [displayCurr,setDC]=useState("USD");const [rates,setRates]=useState({}); const [refCode] = useState("GEM" + Math.random().toString(36).slice(2,8).toUpperCase());
+  const [refCode] = useState("GEM" + Math.random().toString(36).slice(2,8).toUpperCase());
   const coinColors: Record<string,string> = { BTC:"#f7931a", ETH:"#627eea", SOL:"#9945ff", USDT:"#26a17b" };
   const txColors: Record<string,string> = { TRANSFER:"#a78bfa", ADMIN_FUNDING:"#22c55e", DEPOSIT:"#22c55e" };
   const txLabels: Record<string,string> = { TRANSFER:"Sent", ADMIN_FUNDING:"Deposited", DEPOSIT:"Received" };
@@ -13,14 +13,14 @@ export default function Dashboard() {
   useEffect(() => {
     fetch("/api/auth/me").then(r=>r.json()).then(d => { if (!d.id) { window.location.href="/"; return; } setU(d); setK(d.kycStatus||"UNVERIFIED"); });
     fetch("/api/balances").then(r=>r.json()).then(d => { setF(d.balances||[]); setC(d.crypto||[]); setTot(d.totalUSD||0); });
-    fetch("/api/transactions").then(r=>r.json()).then(d => setTxs(d.transactions||[])); fetch("/api/exchange-rates").then(r=>r.json()).then(d=>{const m:any={};(d.rates||[]).forEach((r:any)=>m[r.currency]=r.rate);setRates(m)}).catch(()=>{});
+    fetch("/api/transactions").then(r=>r.json()).then(d => setTxs(d.transactions||[]));
   }, []);
 
   const sendFunds = async(e:any) => { e.preventDefault(); setSM(""); setSE(""); try { const r=await fetch("/api/transfer",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({to,currency:sendCurr,amount:parseFloat(sendAmt)})}); const d=await r.json(); if(!r.ok) throw new Error(d.error); setSM(`✅ Sent ${sendAmt} ${sendCurr}`); setSA(""); setTo(""); } catch(e:any) { setSE(e.message); } };
   const changePw = async(e:any) => { e.preventDefault(); setPM(""); try { const r=await fetch("/api/auth/password",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({currentPassword:curPw,newPassword:newPw})}); const d=await r.json(); if(!r.ok) throw new Error(d.error); setPM("✅ Password changed!"); setCP(""); setNP(""); } catch(e:any) { setPM("Error: "+e.message); } };
 
   if (!user) return <div className="app"><div className="loading"/></div>;
-  const fmt = (n:number) => "$"+n.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}); const fmt2=(n:number,c?:string)=>{const sym:any={"USD":"$","EUR":"€","GBP":"£","JPY":"¥","CHF":"CHF","CAD":"C$","AUD":"A$","CNY":"¥","INR":"₹","BRL":"R$","KRW":"₩","SGD":"S$","NZD":"NZ$","SEK":"kr","TRY":"₺","AED":"د.إ","SAR":"﷼"};const cu=c||displayCurr;const r=rates[cu]||1;const v=cu==="USD"?n:n/r;return (sym[cu]||cu)+" "+v.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})};
+  const fmt = (n:number) => "$"+n.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
 
   return (
     <div className="app">
@@ -40,7 +40,7 @@ export default function Dashboard() {
           <div className="fade-in">
             <div className="row-between" style={{marginBottom:"24px",flexWrap:"wrap",gap:"12px"}}>
               <div><h1 className="font-display" style={{fontSize:"28px",fontWeight:"700"}}>Welcome, {user.name}</h1>
-                <div className="row" style={{marginTop:"4px",gap:"8px",flexWrap:"wrap"}}><p style={{fontSize:"36px",fontWeight:"700"}}><span className="text-gradient">{fmt2(total,displayCurr)}</span></p><select value={displayCurr} onChange={e=>setDC(e.target.value)} style={{padding:"4px 8px",background:"#151525",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"6px",color:"#d4af37",fontSize:"13px",fontWeight:"600",outline:"none",cursor:"pointer"}}>{["USD","EUR","GBP","JPY","CHF","CAD","AUD","CNY","INR","BRL","MXN","SGD","KRW","SEK","TRY","AED","SAR","HKD","THB","ZAR","PLN","NGN","EGP","KES","COP","ARS","UAH","PKR","BDT","OMR","KWD"].map(c=><option key={c} value={c}>{c}</option>)}</select><span className="text-muted" style={{fontSize:"14px",fontWeight:"400"}}>total</span></div>
+                <p style={{fontSize:"36px",fontWeight:"700",marginTop:"4px"}}><span className="text-gradient">{fmt(total)}</span> <span className="text-muted" style={{fontSize:"14px",fontWeight:"400"}}>total value</span></p>
               </div>
               <div className="row-wrap">
                 <><Link href="/wallet/deposit" className="btn btn-primary">📥 Deposit</Link><Link href="/wallet/withdraw" className="btn btn-secondary">📤 Withdraw</Link><Link href="/wallet/swap" className="btn btn-secondary">🔄 Swap</Link><Link href="/kyc" className="btn btn-secondary btn-sm">📋 KYC</Link></>
